@@ -1,16 +1,56 @@
 type Query {
     findBookById(id: ID): Book
+    findAuthorById(id: ID): Author
+}
+
+type Mutation {
+    createAuthor(input: CreateAuthorInput): CreateAuthorPayload
+    updateAuthorName(input: UpdateAuthorNameInput): UpdateAuthorNamePayload
+    createBook(book: CreateBookInput): CreateBookPayload
 }
 
 type Book {
-    id: ID
+    id: ID!
     name: String
     pageCount: Int
     author: Author
+    version: Int
 }
 
 type Author {
-    id: ID
+    id: ID!
+    firstName: String!
+    lastName: String!
+    version: Int
+}
+
+
+input CreateAuthorInput {
+    firstName: String!
+    lastName: String!
+}
+
+input UpdateAuthorNameInput {
+    id: ID!
     firstName: String
     lastName: String
+    version: Int!
+}
+
+type UpdateAuthorNamePayload {
+    author: Author
+}
+
+input CreateBookInput {
+    name: String!
+    pageCount: Int
+    authorId: ID!
+}
+
+type CreateAuthorPayload {
+    author: Author
+}
+
+type CreateBookPayload {
+    book: Book
 }

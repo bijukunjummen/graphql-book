@@ -1,0 +1,16 @@
+services:
+  bookdb:
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bookuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bookuser}
+      POSTGRES_DB: bookdb
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres:

@@ -3,6 +3,7 @@ spring:
     graphiql:
       enabled: true
   datasource:
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    username: ${POSTGRES_USER:bookuser}
+    password: ${POSTGRES_PASSWORD:bookuser}
     driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/bookdb
