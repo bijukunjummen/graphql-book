@@ -1,0 +1,1 @@
+An example GraphQL API using Spring GraphQL
