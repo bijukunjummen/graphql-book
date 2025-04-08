@@ -1,7 +1,7 @@
 package org.bk.graphql.repository
 
-import org.bk.graphql.model.Author
-import org.bk.graphql.model.Book
+import org.bk.graphql.db.Author
+import org.bk.graphql.db.Book
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest

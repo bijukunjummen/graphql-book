@@ -1,6 +1,6 @@
 package org.bk.graphql.service
 
-import org.bk.graphql.model.Author
+import org.bk.graphql.db.Author
 import org.bk.graphql.repository.AuthorRepository
 import org.bk.graphql.service.exception.DomainException
 import org.springframework.data.domain.Page

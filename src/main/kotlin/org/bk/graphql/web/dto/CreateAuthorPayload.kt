@@ -1,4 +1,4 @@
-package org.bk.graphql.web.model
+package org.bk.graphql.web.dto
 
 data class CreateAuthorPayload(
     val author: AuthorDto

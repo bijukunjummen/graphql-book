@@ -1,6 +1,6 @@
-package org.bk.graphql.web.model
+package org.bk.graphql.web.dto
 
-import org.bk.graphql.model.Author
+import org.bk.graphql.db.Author
 
 data class AuthorDto(
     val id: String,

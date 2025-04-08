@@ -1,12 +1,12 @@
 package org.bk.graphql.web
 
-import org.bk.graphql.model.Book
+import org.bk.graphql.db.Book
 import org.bk.graphql.service.AuthorService
 import org.bk.graphql.service.CreateAuthorCommand
 import org.bk.graphql.service.GetAuthorQuery
-import org.bk.graphql.web.model.AuthorDto
-import org.bk.graphql.web.model.CreateAuthorInput
-import org.bk.graphql.web.model.CreateAuthorPayload
+import org.bk.graphql.web.dto.AuthorDto
+import org.bk.graphql.web.dto.CreateAuthorInput
+import org.bk.graphql.web.dto.CreateAuthorPayload
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping

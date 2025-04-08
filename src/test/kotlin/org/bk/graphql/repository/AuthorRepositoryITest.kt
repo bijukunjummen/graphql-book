@@ -1,13 +1,11 @@
 package org.bk.graphql.repository
 
 import org.assertj.core.api.Assertions.assertThat
-import org.bk.graphql.model.Author
+import org.bk.graphql.db.Author
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
