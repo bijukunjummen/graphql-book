@@ -17,7 +17,7 @@ import org.springframework.stereotype.Controller
 class AuthorController(private val authorService: AuthorService) {
 
     @QueryMapping
-    fun findAuthorById(@Argument id: String): AuthorDto {
+    fun author(@Argument id: String): AuthorDto {
         return authorService.getAuthor(GetAuthorQuery(id)).let { AuthorDto.map(it) }
     }
 

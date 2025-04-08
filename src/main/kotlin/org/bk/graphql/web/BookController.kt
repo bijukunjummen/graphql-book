@@ -2,7 +2,9 @@ package org.bk.graphql.web
 
 import org.bk.graphql.db.Book
 import org.bk.graphql.repository.BookRepository
-import org.bk.graphql.web.dto.*
+import org.bk.graphql.web.dto.BookDto
+import org.bk.graphql.web.dto.OrderField
+import org.bk.graphql.web.dto.SortInput
 import org.springframework.data.domain.OffsetScrollPosition
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -16,16 +18,23 @@ import org.springframework.graphql.data.query.ScrollSubrange
 import org.springframework.stereotype.Controller
 
 @Controller
-class BookController(private val bookRepository: BookRepository, private val cursorStrategy: EncodingCursorStrategy<ScrollPosition>) {
+class BookController(
+    private val bookRepository: BookRepository,
+    private val cursorStrategy: EncodingCursorStrategy<ScrollPosition>
+) {
 
     @QueryMapping
-    fun findBookById(@Argument id: String): BookDto {
+    fun book(@Argument id: String): BookDto {
         return BookDto.map(bookRepository.findById(id).orElseThrow())
     }
 
     @QueryMapping
-    fun allBooks(subrange: ScrollSubrange, @Argument sort: List<SortInput>? = listOf(SortInput("name", OrderField.ASC))): Page<Book> {
-        val scrollPosition:OffsetScrollPosition = subrange.position().orElse(ScrollPosition.offset()) as OffsetScrollPosition
+    fun books(
+        subrange: ScrollSubrange,
+        @Argument sort: List<SortInput>? = listOf(SortInput("name", OrderField.ASC))
+    ): Page<Book> {
+        val scrollPosition: OffsetScrollPosition =
+            subrange.position().orElse(ScrollPosition.offset()) as OffsetScrollPosition
         val limit = subrange.count().orElse(10)
         val offset = if (scrollPosition.isInitial) 0 else scrollPosition.offset.plus(1).toInt()
         val orderList: List<Order> = sort?.map { sort ->
@@ -33,6 +42,7 @@ class BookController(private val bookRepository: BookRepository, private val cur
         } ?: emptyList()
         val sort = Sort.by(orderList)
         val pageable = PageRequest.of(if (limit != 0) offset / limit else 0, limit, sort)
-        return bookRepository.findAll(pageable)
+        val page: Page<Book> = bookRepository.findAll(pageable)
+        return page
     }
 }

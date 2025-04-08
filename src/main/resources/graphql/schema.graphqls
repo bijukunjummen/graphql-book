@@ -1,7 +1,7 @@
 type Query {
-    findBookById(id: ID): Book
-    findAuthorById(id: ID): Author
-    allBooks(first: Int, after: String, sort: [Sort] = [{field: "name", order: ASC}]): BookConnection
+    book(id: ID): Book
+    author(id: ID): Author
+    books(first: Int, after: String, sort: [Sort] = [{field: "name", order: ASC}]): BookConnection
 }
 
 type Mutation {

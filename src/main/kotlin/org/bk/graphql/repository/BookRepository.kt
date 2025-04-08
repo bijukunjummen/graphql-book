@@ -6,6 +6,5 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface BookRepository: CrudRepository<Book, String>, PagingAndSortingRepository<Book, String> {
-    fun id(id: String): MutableList<Book>
+interface BookRepository : CrudRepository<Book, String>, PagingAndSortingRepository<Book, String> {
 }

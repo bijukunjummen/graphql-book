@@ -39,7 +39,7 @@ class BookControllerTests {
         bookRepository.save(Book(id = "book-id-2", name = "Test Book - 2", pageCount = 100, authorId = "author-id-1"))
         val document1 = """
             query MyQuery {
-              allBooks(first: 1) {
+              books(first: 1) {
                 pageInfo {
                   startCursor
                   endCursor
@@ -67,14 +67,14 @@ class BookControllerTests {
         val nodePath: GraphQlTester.Response = graphQlTester.document(document1)
             .execute()
 
-        nodePath.path("allBooks.edges[*].node.name")
+        nodePath.path("books.edges[*].node.name")
             .entityList(String::class.java)
             .containsExactly("Test Book - 1")
 
-        val endCursor = nodePath.path("allBooks.pageInfo.endCursor").entity(String::class.java).get()
+        val endCursor = nodePath.path("books.pageInfo.endCursor").entity(String::class.java).get()
         val document2 = """
             query MyQuery {
-              allBooks(first: 1, after: "$endCursor") {
+              books(first: 1, after: "$endCursor") {
                 pageInfo {
                   startCursor
                   endCursor
@@ -101,7 +101,7 @@ class BookControllerTests {
 
         graphQlTester.document(document2)
             .execute()
-            .path("allBooks.edges[*].node.name")
+            .path("books.edges[*].node.name")
             .entityList(String::class.java)
             .containsExactly("Test Book - 2")
     }
