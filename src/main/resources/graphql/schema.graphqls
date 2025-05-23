@@ -13,27 +13,24 @@ type Book {
     id: ID!
     name: String
     pageCount: Int
-    author: Author
+    authors: [Author]
     version: Int
 }
 
 type Author {
     id: ID!
-    firstName: String!
-    lastName: String!
+    name: String
     version: Int
 }
 
 
 input CreateAuthorInput {
-    firstName: String!
-    lastName: String!
+    name: String!
 }
 
 input UpdateAuthorNameInput {
     id: ID!
-    firstName: String
-    lastName: String
+    name: String
     version: Int!
 }
 
@@ -44,7 +41,7 @@ type UpdateAuthorNamePayload {
 input CreateBookInput {
     name: String!
     pageCount: Int
-    authorId: ID!
+    authors: [ID!]!
 }
 
 type CreateAuthorPayload {

@@ -8,5 +8,6 @@ interface AuthorService {
     fun createOrUpdateAuthor(createOrUpdateAuthorCommand: CreateOrUpdateAuthorCommand): Author
     fun updateAuthor(updateAuthorCommand: UpdateAuthorCommand): Author
     fun getAuthors(getAuthorsQuery: GetAuthorsQuery): Page<Author>
-    fun getAuthor(getAuthorQuery: GetAuthorQuery): Author
+    fun getAuthor(getAuthorQuery: ById): Author
+    fun getAuthors(ids: ByIds): List<Author>
 }

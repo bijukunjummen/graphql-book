@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table
 @Table("authors")
 data class Author(
     @Id val id: String,
-    val firstName: String,
-    val lastName: String,
+    val name: String,
     @Version val version: Int = 0
 )

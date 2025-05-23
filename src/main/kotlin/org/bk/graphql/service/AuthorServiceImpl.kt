@@ -13,8 +13,7 @@ class AuthorServiceImpl(private val authorRepository: AuthorRepository): AuthorS
     override fun createAuthor(createAuthorCommand: CreateAuthorCommand): Author {
         val author = Author(
             id = UUID.randomUUID().toString(),
-            firstName = createAuthorCommand.firstName,
-            lastName = createAuthorCommand.lastName,
+            name = createAuthorCommand.name,
             version = 0
         )
         return authorRepository.save(author)
@@ -26,8 +25,7 @@ class AuthorServiceImpl(private val authorRepository: AuthorRepository): AuthorS
         author.ifPresentOrElse({
             if (createOrUpdateAuthorCommand.version != 0) {
                 val updatedAuthor = it.copy(
-                    firstName = createOrUpdateAuthorCommand.firstName,
-                    lastName = createOrUpdateAuthorCommand.lastName,
+                    name = createOrUpdateAuthorCommand.name,
                     version = createOrUpdateAuthorCommand.version
                 )
                 authorRepository.save(updatedAuthor)
@@ -35,8 +33,7 @@ class AuthorServiceImpl(private val authorRepository: AuthorRepository): AuthorS
         }, {
             val newAuthor = Author(
                 id = createOrUpdateAuthorCommand.id,
-                firstName = createOrUpdateAuthorCommand.firstName,
-                lastName = createOrUpdateAuthorCommand.lastName,
+                name = createOrUpdateAuthorCommand.name,
                 version = 0
             )
             authorRepository.save(newAuthor)
@@ -49,8 +46,7 @@ class AuthorServiceImpl(private val authorRepository: AuthorRepository): AuthorS
             .orElseThrow { DomainException("Author not found") }
 
         val updatedAuthor = author.copy(
-            firstName = updateAuthorCommand.firstName,
-            lastName = updateAuthorCommand.lastName,
+            name = updateAuthorCommand.name,
             version = updateAuthorCommand.version
         )
         return authorRepository.save(updatedAuthor)
@@ -60,7 +56,11 @@ class AuthorServiceImpl(private val authorRepository: AuthorRepository): AuthorS
         return authorRepository.findAll(Pageable.ofSize(getAuthorsQuery.size).withPage(getAuthorsQuery.page))
     }
 
-    override fun getAuthor(getAuthorQuery: GetAuthorQuery): Author {
+    override fun getAuthor(getAuthorQuery: ById): Author {
         return authorRepository.findById(getAuthorQuery.id).orElseThrow { DomainException("Author not found") }
+    }
+
+    override fun getAuthors(ids: ByIds): List<Author> {
+        return authorRepository.findAllById(ids.ids).toList()
     }
 }

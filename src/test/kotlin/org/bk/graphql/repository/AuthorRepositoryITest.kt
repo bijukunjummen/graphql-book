@@ -22,15 +22,15 @@ class AuthorRepositoryITest {
 
     @Test
     fun testCrudOperations() {
-        val author = Author("id", "first", "last")
+        val author = Author("id", "first last")
         authorRepository.save(author)
         assertThat(authorRepository.findById("id"))
-            .hasValue(Author("id", "first", "last", 1))
-        assertThat(authorRepository.save(author.copy(firstName = "firstUpdated", version = 1)))
-            .isEqualTo(Author("id", "firstUpdated", "last", 2))
+            .hasValue(Author("id", "first last", 1))
+        assertThat(authorRepository.save(author.copy(name = "firstUpdated last", version = 1)))
+            .isEqualTo(Author("id", "firstUpdated last", 2))
 
         assertThat(authorRepository.findById("id"))
-            .hasValue(Author("id", "firstUpdated", "last", 2))
+            .hasValue(Author("id", "firstUpdated last", 2))
         val page = authorRepository.findAll(Pageable.ofSize(5))
         assertThat(page.totalElements).isEqualTo(1)
     }
