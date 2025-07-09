@@ -1,6 +1,6 @@
 package org.bk.graphql.web.dto
 
-import org.bk.graphql.model.Author
+import org.bk.graphql.domain.Author
 
 data class AuthorDto(
     val id: String,
@@ -10,7 +10,7 @@ data class AuthorDto(
 ) {
     companion object {
         fun map(author: Author): AuthorDto {
-            return AuthorDto(author.id, author.name, author.version)
+            return AuthorDto(author.id.id, author.name, author.version)
         }
     }
 }

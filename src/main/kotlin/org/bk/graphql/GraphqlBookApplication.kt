@@ -1,5 +1,6 @@
 package org.bk.graphql
 
+import org.bk.graphql.domain.AuthorId
 import org.bk.graphql.service.AuthorService
 import org.bk.graphql.service.BookService
 import org.bk.graphql.service.CreateOrUpdateAuthorCommand

@@ -1,8 +1,8 @@
 package org.bk.graphql.repository
 
-import org.bk.graphql.model.Author
-import org.bk.graphql.model.AuthorRef
-import org.bk.graphql.model.Book
+import org.bk.graphql.entity.AuthorEntity
+import org.bk.graphql.entity.AuthorRef
+import org.bk.graphql.entity.BookEntity
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
@@ -24,10 +24,10 @@ class BookRepositoryTest {
 
     @Test
     fun testCrudOperations() {
-        val author = Author(id = "author-id", name = "first last")
+        val author = AuthorEntity(id = "author-id", name = "first last")
         authorRepository.save(author)
 
-        val book = Book(id = "id", name = "name", pageCount = 100,
+        val book = BookEntity(id = "id", name = "name", pageCount = 100,
             authors = setOf(AuthorRef(
             author = AggregateReference.to("author-id")
         )))

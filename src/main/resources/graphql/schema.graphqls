@@ -7,6 +7,7 @@ type Mutation {
     createAuthor(input: CreateAuthorInput): CreateAuthorPayload
     updateAuthorName(input: UpdateAuthorNameInput): UpdateAuthorNamePayload
     createBook(book: CreateBookInput): CreateBookPayload
+    updateBookName(input: UpdateBookNameInput): UpdateBookNamePayload
 }
 
 type Book {
@@ -49,5 +50,15 @@ type CreateAuthorPayload {
 }
 
 type CreateBookPayload {
+    book: Book
+}
+
+input UpdateBookNameInput {
+    id: ID!
+    name: String
+    version: Int!
+}
+
+type UpdateBookNamePayload {
     book: Book
 }

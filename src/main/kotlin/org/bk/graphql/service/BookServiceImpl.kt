@@ -1,7 +1,8 @@
 package org.bk.graphql.service
 
-import org.bk.graphql.model.AuthorRef
-import org.bk.graphql.model.Book
+import org.bk.graphql.domain.Book
+import org.bk.graphql.entity.AuthorRef
+import org.bk.graphql.entity.BookEntity
 import org.bk.graphql.repository.BookRepository
 import org.bk.graphql.service.exception.DomainException
 import org.springframework.data.domain.Page
@@ -16,14 +17,15 @@ class BookServiceImpl(private val bookRepository: BookRepository) : BookService 
     override fun createBook(createBookCommand: CreateBookCommand): Book {
         val bookId = UUID.randomUUID().toString()
 
-        val book = Book(
+        val book = BookEntity(
             id = bookId,
             name = createBookCommand.name,
             pageCount = createBookCommand.pageCount,
-            authors = createBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId)) }.toSet(),
+            authors = createBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }.toSet(),
             version = 0
         )
-        return bookRepository.save(book)
+        val savedBook: BookEntity =  bookRepository.save(book)
+        return savedBook.toModel()
     }
 
     override fun createOrUpdateBook(createOrUpdateBookCommand: CreateOrUpdateBookCommand): Book {
@@ -35,22 +37,22 @@ class BookServiceImpl(private val bookRepository: BookRepository) : BookService 
                     val updatedBook = it.copy(
                         name = createOrUpdateBookCommand.name,
                         pageCount = createOrUpdateBookCommand.pageCount,
-                        authors = createOrUpdateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId)) }.toSet(),
+                        authors = createOrUpdateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }.toSet(),
                         version = createOrUpdateBookCommand.version
                     )
                     bookRepository.save(updatedBook)
                 }
             },
             {
-                val newBook = Book(
+                val newBook = BookEntity(
                     id = createOrUpdateBookCommand.id,
                     name = createOrUpdateBookCommand.name,
                     pageCount = createOrUpdateBookCommand.pageCount,
-                    authors = createOrUpdateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId)) }.toSet(),
+                    authors = createOrUpdateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }.toSet(),
                 )
                 bookRepository.save(newBook)
             })
-        return bookRepository.findById(createOrUpdateBookCommand.id).orElseThrow()
+        return bookRepository.findById(createOrUpdateBookCommand.id).orElseThrow().toModel()
     }
 
     override fun updateBook(updateBookCommand: UpdateBookCommand): Book {
@@ -59,17 +61,24 @@ class BookServiceImpl(private val bookRepository: BookRepository) : BookService 
         val updatedBook = book.copy(
             name = updateBookCommand.name,
             pageCount = updateBookCommand.pageCount,
-            authors = updateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId)) }.toSet(),
+            authors = updateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }.toSet(),
             version = updateBookCommand.version
         )
-        return bookRepository.save(updatedBook)
+        val savedBook: BookEntity =  bookRepository.save(updatedBook)
+        return savedBook.toModel()
     }
 
     override fun getBooks(getBooksQuery: GetBooksQuery): Page<Book> {
-        return bookRepository.findAll(Pageable.ofSize(getBooksQuery.size).withPage(getBooksQuery.page))
+        return bookRepository
+            .findAll(Pageable.ofSize(getBooksQuery.size).withPage(getBooksQuery.page))
+            .map { it.toModel() }
     }
 
     override fun getBook(byIdQuery: ById): Optional<Book> {
-        return bookRepository.findById(byIdQuery.id)
+        return bookRepository.findById(byIdQuery.id).map { it.toModel() }
+    }
+
+    override fun getBooks(byIdQuery: ByIds): List<Book> {
+        return bookRepository.findAllById(byIdQuery.ids).map { it.toModel() }
     }
 }

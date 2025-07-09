@@ -1,7 +1,7 @@
 package org.bk.graphql.web
 
-import org.bk.graphql.model.Book
-import org.bk.graphql.repository.BookRepository
+import org.bk.graphql.domain.AuthorId
+import org.bk.graphql.domain.Book
 import org.bk.graphql.service.BookService
 import org.bk.graphql.service.ById
 import org.bk.graphql.service.CreateBookCommand
@@ -22,12 +22,12 @@ class BookController(private val bookService: BookService) {
     }
 
     @MutationMapping
-    fun createBook(book: CreateBookInput): CreateBookPayload {
+    fun createBook(@Argument book: CreateBookInput): CreateBookPayload {
         val createdBook: Book = bookService.createBook(
             CreateBookCommand(
                 name = book.name,
                 pageCount = book.pageCount,
-                authors = book.authors
+                authors = book.authors.map { id -> AuthorId(id) }.toSet()
             )
         )
         return CreateBookPayload(BookDto.map(createdBook))

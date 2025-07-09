@@ -1,26 +1,29 @@
 package org.bk.graphql.service
 
-import org.bk.graphql.model.Author
+import org.bk.graphql.domain.Author
+import org.bk.graphql.entity.AuthorEntity
 import org.bk.graphql.repository.AuthorRepository
 import org.bk.graphql.service.exception.DomainException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import java.util.Optional
 import java.util.UUID
 
 @Service
-class AuthorServiceImpl(private val authorRepository: AuthorRepository): AuthorService {
+class AuthorServiceImpl(private val authorRepository: AuthorRepository) : AuthorService {
     override fun createAuthor(createAuthorCommand: CreateAuthorCommand): Author {
-        val author = Author(
+        val author = AuthorEntity(
             id = UUID.randomUUID().toString(),
             name = createAuthorCommand.name,
             version = 0
         )
-        return authorRepository.save(author)
+        val savedAuthor = authorRepository.save(author)
+        return savedAuthor.toModel()
     }
 
     override fun createOrUpdateAuthor(createOrUpdateAuthorCommand: CreateOrUpdateAuthorCommand): Author {
-        val author = authorRepository.findById(createOrUpdateAuthorCommand.id)
+        val author: Optional<AuthorEntity> = authorRepository.findById(createOrUpdateAuthorCommand.id)
 
         author.ifPresentOrElse({
             if (createOrUpdateAuthorCommand.version != 0) {
@@ -31,14 +34,16 @@ class AuthorServiceImpl(private val authorRepository: AuthorRepository): AuthorS
                 authorRepository.save(updatedAuthor)
             }
         }, {
-            val newAuthor = Author(
+            val newAuthor = AuthorEntity(
                 id = createOrUpdateAuthorCommand.id,
                 name = createOrUpdateAuthorCommand.name,
                 version = 0
             )
             authorRepository.save(newAuthor)
         })
-        return authorRepository.findById(createOrUpdateAuthorCommand.id).orElseThrow()
+        val authorEntity: AuthorEntity =
+            authorRepository.findById(createOrUpdateAuthorCommand.id).orElseThrow()
+        return authorEntity.toModel()
     }
 
     override fun updateAuthor(updateAuthorCommand: UpdateAuthorCommand): Author {
@@ -49,18 +54,25 @@ class AuthorServiceImpl(private val authorRepository: AuthorRepository): AuthorS
             name = updateAuthorCommand.name,
             version = updateAuthorCommand.version
         )
-        return authorRepository.save(updatedAuthor)
+        val updatedAuthorEntity: AuthorEntity =  authorRepository.save(updatedAuthor)
+        return updatedAuthorEntity.toModel()
     }
 
     override fun getAuthors(getAuthorsQuery: GetAuthorsQuery): Page<Author> {
-        return authorRepository.findAll(Pageable.ofSize(getAuthorsQuery.size).withPage(getAuthorsQuery.page))
+        return authorRepository
+            .findAll(Pageable.ofSize(getAuthorsQuery.size)
+                .withPage(getAuthorsQuery.page))
+        .map { it.toModel() }
     }
 
     override fun getAuthor(getAuthorQuery: ById): Author {
-        return authorRepository.findById(getAuthorQuery.id).orElseThrow { DomainException("Author not found") }
+        return authorRepository
+            .findById(getAuthorQuery.id)
+            .orElseThrow { DomainException("Author not found") }
+        .toModel()
     }
 
     override fun getAuthors(ids: ByIds): List<Author> {
-        return authorRepository.findAllById(ids.ids).toList()
+        return authorRepository.findAllById(ids.ids).map { it.toModel() }
     }
 }
