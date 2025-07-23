@@ -1,19 +1,26 @@
 package org.bk.graphql.service
 
+import org.bk.graphql.domain.Author
+import org.bk.graphql.domain.AuthorId
 import org.bk.graphql.domain.Book
+import org.bk.graphql.domain.BookId
 import org.bk.graphql.entity.AuthorRef
 import org.bk.graphql.entity.BookEntity
+import org.bk.graphql.repository.AuthorRepository
 import org.bk.graphql.repository.BookRepository
 import org.bk.graphql.service.exception.DomainException
+import org.bk.graphql.web.dto.AuthorDto
+import org.bk.graphql.web.dto.BookDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jdbc.core.mapping.AggregateReference
 import org.springframework.stereotype.Service
 import java.util.Optional
 import java.util.UUID
+import java.util.stream.Collectors
 
 @Service
-class BookServiceImpl(private val bookRepository: BookRepository) : BookService {
+class BookServiceImpl(private val bookRepository: BookRepository, private val authorRepository: AuthorRepository) : BookService {
     override fun createBook(createBookCommand: CreateBookCommand): Book {
         val bookId = UUID.randomUUID().toString()
 
@@ -74,11 +81,23 @@ class BookServiceImpl(private val bookRepository: BookRepository) : BookService 
             .map { it.toModel() }
     }
 
-    override fun getBook(byIdQuery: ById): Optional<Book> {
-        return bookRepository.findById(byIdQuery.id).map { it.toModel() }
+    override fun getBook(byIdQuery: ById<BookId>): Optional<Book> {
+        val bookId = byIdQuery.id
+        return bookRepository.findById(bookId.id).map { it.toModel() }
     }
 
-    override fun getBooks(byIdQuery: ByIds): List<Book> {
-        return bookRepository.findAllById(byIdQuery.ids).map { it.toModel() }
+    override fun getBooks(byIdQuery: ByIds<BookId>): List<Book> {
+        return bookRepository.findAllById(byIdQuery.ids.map { bookId -> bookId.id }).map { it.toModel() }
+    }
+
+    override fun getAuthorsForBooks(ids: ByIds<BookId>): Map<BookId, Set<Author>> {
+        val booksFromDb = getBooks(ids)
+        val authorsFromDb: List<Author> = authorRepository.findAllById(ids.ids.map { authorId -> authorId.id }).map { it.toModel() }
+        val authorsById: Map<AuthorId, Author> = authorsFromDb.stream().collect(Collectors.toMap({ a -> a.id }, { a -> a }))
+        return booksFromDb.map { book ->
+            val bookId = book.id
+            val authors: Set<Author> = book.authors.map { authorId -> authorsById[authorId]!! }.toSet()
+            bookId to authors
+        }.toMap()
     }
 }

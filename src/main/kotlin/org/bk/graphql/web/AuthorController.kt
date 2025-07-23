@@ -25,7 +25,7 @@ class AuthorController(private val authorService: AuthorService, private val boo
 
     @QueryMapping
     fun findAuthorById(@Argument id: String): AuthorDto {
-        return authorService.getAuthor(ById(id)).let { AuthorDto.map(it) }
+        return authorService.getAuthor(ById(AuthorId(id))).let { AuthorDto.map(it) }
     }
 
     @MutationMapping
@@ -44,10 +44,10 @@ class AuthorController(private val authorService: AuthorService, private val boo
     @BatchMapping(typeName = "Book")
     fun authors(books: Set<BookDto>): Map<BookDto, List<AuthorDto>> {
         val bookDtoById: Map<BookId, BookDto> = books.stream().collect(Collectors.toMap({ b -> BookId(b.id) }, { it }))
-        val booksFromDb: List<Book> = bookService.getBooks(ByIds(books.map { it.id }))
+        val booksFromDb: List<Book> = bookService.getBooks(ByIds<BookId>(books.map { BookId(it.id) }))
         val authorIds: List<String> = booksFromDb.stream().flatMap { book -> book.authors.stream().map { ref -> ref.id } }.toList()
         val authorByIds: Map<AuthorId, AuthorDto> =
-            authorService.getAuthors(ByIds(authorIds))
+            authorService.getAuthors(ByIds(authorIds.map { AuthorId(it) }))
                 .stream().collect(Collectors.toMap({ a -> a.id }, { a -> AuthorDto.map(a) }))
 
         val result: Map<BookDto, List<AuthorDto>> = booksFromDb.map {book ->

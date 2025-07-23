@@ -1,6 +1,7 @@
 package org.bk.graphql.service
 
 import org.bk.graphql.domain.Author
+import org.bk.graphql.domain.AuthorId
 import org.bk.graphql.entity.AuthorEntity
 import org.bk.graphql.repository.AuthorRepository
 import org.bk.graphql.service.exception.DomainException
@@ -65,14 +66,14 @@ class AuthorServiceImpl(private val authorRepository: AuthorRepository) : Author
         .map { it.toModel() }
     }
 
-    override fun getAuthor(getAuthorQuery: ById): Author {
+    override fun getAuthor(getAuthorQuery: ById<AuthorId>): Author {
         return authorRepository
-            .findById(getAuthorQuery.id)
+            .findById(getAuthorQuery.id.id)
             .orElseThrow { DomainException("Author not found") }
         .toModel()
     }
 
-    override fun getAuthors(ids: ByIds): List<Author> {
-        return authorRepository.findAllById(ids.ids).map { it.toModel() }
+    override fun getAuthors(ids: ByIds<AuthorId>): List<Author> {
+        return authorRepository.findAllById(ids.ids.map { authorId -> authorId.id }).map { it.toModel() }
     }
 }

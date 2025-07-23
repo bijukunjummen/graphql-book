@@ -2,6 +2,7 @@ package org.bk.graphql.web
 
 import org.bk.graphql.domain.AuthorId
 import org.bk.graphql.domain.Book
+import org.bk.graphql.domain.BookId
 import org.bk.graphql.service.BookService
 import org.bk.graphql.service.ById
 import org.bk.graphql.service.CreateBookCommand
@@ -18,7 +19,7 @@ class BookController(private val bookService: BookService) {
 
     @QueryMapping
     fun findBookById(@Argument id: String): BookDto {
-        return BookDto.map(bookService.getBook(ById(id)).orElseThrow())
+        return BookDto.map(bookService.getBook(ById(BookId(id))).orElseThrow())
     }
 
     @MutationMapping

@@ -1,5 +1,5 @@
 package org.bk.graphql.service
 
-data class ById(
-    val id: String
+data class ById<T>(
+    val id: T
 )
