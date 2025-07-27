@@ -6,7 +6,7 @@ type Query {
 type Mutation {
     createAuthor(input: CreateAuthorInput): CreateAuthorPayload
     updateAuthorName(input: UpdateAuthorNameInput): UpdateAuthorNamePayload
-    createBook(book: CreateBookInput): CreateBookPayload
+    createBook(input: CreateBookInput): CreateBookPayload
     updateBookName(input: UpdateBookNameInput): UpdateBookNamePayload
 }
 

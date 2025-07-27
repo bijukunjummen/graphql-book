@@ -23,12 +23,12 @@ class BookController(private val bookService: BookService) {
     }
 
     @MutationMapping
-    fun createBook(@Argument book: CreateBookInput): CreateBookPayload {
+    fun createBook(@Argument input: CreateBookInput): CreateBookPayload {
         val createdBook: Book = bookService.createBook(
             CreateBookCommand(
-                name = book.name,
-                pageCount = book.pageCount,
-                authors = book.authors.map { id -> AuthorId(id) }.toSet()
+                name = input.name,
+                pageCount = input.pageCount,
+                authors = input.authors.map { id -> AuthorId(id) }.toSet()
             )
         )
         return CreateBookPayload(BookDto.map(createdBook))
