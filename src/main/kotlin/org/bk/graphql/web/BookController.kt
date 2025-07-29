@@ -12,7 +12,10 @@ import org.bk.graphql.web.dto.CreateBookPayload
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.graphql.data.method.annotation.SubscriptionMapping
 import org.springframework.stereotype.Controller
+import reactor.core.publisher.Flux
+import java.time.Duration
 
 @Controller
 class BookController(private val bookService: BookService) {
@@ -32,5 +35,12 @@ class BookController(private val bookService: BookService) {
             )
         )
         return CreateBookPayload(BookDto.map(createdBook))
+    }
+
+    @SubscriptionMapping
+    fun getABook(@Argument id: String): Flux<BookDto> {
+        return Flux.interval(Duration.ofSeconds(5))
+            .map { l ->  BookDto.map(bookService.getBook(ById(BookId(id))).orElseThrow())}
+
     }
 }

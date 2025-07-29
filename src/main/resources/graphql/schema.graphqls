@@ -10,6 +10,10 @@ type Mutation {
     updateBookName(input: UpdateBookNameInput): UpdateBookNamePayload
 }
 
+type Subscription {
+    getABook(id: ID): Book
+}
+
 type Book {
     id: ID!
     name: String
