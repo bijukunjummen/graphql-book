@@ -2,6 +2,8 @@ spring:
   graphql:
     graphiql:
       enabled: true
+    websocket:
+      path: /graphql
   datasource:
     username: ${POSTGRES_USER:bookuser}
     password: ${POSTGRES_PASSWORD:bookuser}

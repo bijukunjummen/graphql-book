@@ -13,5 +13,5 @@ interface BookService {
     fun getBooks(getBooksQuery: GetBooksQuery): Page<Book>
     fun getBook(byIdQuery: ById<BookId>): Optional<Book>
     fun getBooks(byIdQuery: ByIds<BookId>): List<Book>
-    fun getAuthorsForBooks(ids: ByIds<BookId>): Map<BookId, Set<Author>>
+    fun getAuthorsForBooks(ids: ByIds<BookId>): Map<BookId, List<Author>>
 }

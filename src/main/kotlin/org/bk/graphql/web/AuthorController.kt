@@ -1,5 +1,6 @@
 package org.bk.graphql.web
 
+import org.bk.graphql.domain.Author
 import org.bk.graphql.domain.AuthorId
 import org.bk.graphql.domain.Book
 import org.bk.graphql.domain.BookId
@@ -17,11 +18,15 @@ import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.BatchMapping
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.graphql.execution.BatchLoaderRegistry
 import org.springframework.stereotype.Controller
 import java.util.stream.Collectors
 
 @Controller
-class AuthorController(private val authorService: AuthorService, private val bookService: BookService) {
+class AuthorController(
+    private val authorService: AuthorService,
+    private val bookService: BookService
+) {
 
     @QueryMapping
     fun findAuthorById(@Argument id: String): AuthorDto {
@@ -34,27 +39,16 @@ class AuthorController(private val authorService: AuthorService, private val boo
         return CreateAuthorPayload(AuthorDto.map(createdAuthor))
     }
 
-//    @SchemaMapping(typeName = "Book", field = "authors")
-//    fun authors(book: BookDto): List<AuthorDto> {
-//        val rawBook = bookService.getBook(ById(book.id)).orElseThrow()
-//        val authorIds: List<String> = rawBook.authors.map { ref -> ref.author.id!! }
-//        return authorService.getAuthors(ByIds(authorIds)).map { AuthorDto.map(it) }
-//    }
 
     @BatchMapping(typeName = "Book")
     fun authors(books: Set<BookDto>): Map<BookDto, List<AuthorDto>> {
-        val bookDtoById: Map<BookId, BookDto> = books.stream().collect(Collectors.toMap({ b -> BookId(b.id) }, { it }))
-        val booksFromDb: List<Book> = bookService.getBooks(ByIds<BookId>(books.map { BookId(it.id) }))
-        val authorIds: List<String> = booksFromDb.stream().flatMap { book -> book.authors.stream().map { ref -> ref.id } }.toList()
-        val authorByIds: Map<AuthorId, AuthorDto> =
-            authorService.getAuthors(ByIds(authorIds.map { AuthorId(it) }))
-                .stream().collect(Collectors.toMap({ a -> a.id }, { a -> AuthorDto.map(a) }))
-
-        val result: Map<BookDto, List<AuthorDto>> = booksFromDb.map {book ->
-            val bookDto = bookDtoById[book.id]!!
-            val authors = book.authors.map { authorId -> authorByIds[authorId]!! }.toList()
-            bookDto to authors
+        val bookIds: List<BookId> = books.map { book -> BookId(book.id) }
+        val authorsForBooks: Map<BookId, List<Author>> = bookService.getAuthorsForBooks(ByIds(bookIds))
+        val result: Map<BookDto, List<AuthorDto>> = books.map {book ->
+            val authors = authorsForBooks[BookId(book.id)]!!.map { author -> AuthorDto.map(author) }
+            book to authors
         }.toMap()
         return result
     }
 }
+

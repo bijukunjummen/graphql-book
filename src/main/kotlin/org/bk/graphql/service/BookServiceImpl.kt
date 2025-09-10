@@ -20,7 +20,7 @@ import java.util.UUID
 import java.util.stream.Collectors
 
 @Service
-class BookServiceImpl(private val bookRepository: BookRepository, private val authorRepository: AuthorRepository) : BookService {
+class BookServiceImpl(private val bookRepository: BookRepository, private val authorService: AuthorService) : BookService {
     override fun createBook(createBookCommand: CreateBookCommand): Book {
         val bookId = UUID.randomUUID().toString()
 
@@ -90,13 +90,14 @@ class BookServiceImpl(private val bookRepository: BookRepository, private val au
         return bookRepository.findAllById(byIdQuery.ids.map { bookId -> bookId.id }).map { it.toModel() }
     }
 
-    override fun getAuthorsForBooks(ids: ByIds<BookId>): Map<BookId, Set<Author>> {
+    override fun getAuthorsForBooks(ids: ByIds<BookId>): Map<BookId, List<Author>> {
         val booksFromDb = getBooks(ids)
-        val authorsFromDb: List<Author> = authorRepository.findAllById(ids.ids.map { authorId -> authorId.id }).map { it.toModel() }
+        val authorIds: List<AuthorId> = booksFromDb.flatMap { book -> book.authors }
+        val authorsFromDb: List<Author> = authorService.getAuthors(ByIds(authorIds))
         val authorsById: Map<AuthorId, Author> = authorsFromDb.stream().collect(Collectors.toMap({ a -> a.id }, { a -> a }))
         return booksFromDb.map { book ->
             val bookId = book.id
-            val authors: Set<Author> = book.authors.map { authorId -> authorsById[authorId]!! }.toSet()
+            val authors: List<Author> = book.authors.map { authorId -> authorsById[authorId]!! }
             bookId to authors
         }.toMap()
     }
