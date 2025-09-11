@@ -14,12 +14,15 @@ import org.bk.graphql.web.dto.AuthorDto
 import org.bk.graphql.web.dto.BookDto
 import org.bk.graphql.web.dto.CreateAuthorInput
 import org.bk.graphql.web.dto.CreateAuthorPayload
+import org.dataloader.DataLoader
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.BatchMapping
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.graphql.execution.BatchLoaderRegistry
 import org.springframework.stereotype.Controller
+import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
 
 @Controller
@@ -39,16 +42,20 @@ class AuthorController(
         return CreateAuthorPayload(AuthorDto.map(createdAuthor))
     }
 
-
-    @BatchMapping(typeName = "Book")
-    fun authors(books: Set<BookDto>): Map<BookDto, List<AuthorDto>> {
-        val bookIds: List<BookId> = books.map { book -> BookId(book.id) }
-        val authorsForBooks: Map<BookId, List<Author>> = bookService.getAuthorsForBooks(ByIds(bookIds))
-        val result: Map<BookDto, List<AuthorDto>> = books.map {book ->
-            val authors = authorsForBooks[BookId(book.id)]!!.map { author -> AuthorDto.map(author) }
-            book to authors
-        }.toMap()
-        return result
+    @SchemaMapping(typeName = "Book")
+    fun authors(bookDto: BookDto, dataLoader: DataLoader<BookId, AuthorsWrapper>): CompletableFuture<List<AuthorDto>> {
+        return dataLoader.load(BookId(bookDto.id)).thenApply { wrapper -> wrapper.authors }
     }
+
+//    @BatchMapping(typeName = "Book")
+//    fun authors(books: Set<BookDto>): Map<BookDto, List<AuthorDto>> {
+//        val bookIds: List<BookId> = books.map { book -> BookId(book.id) }
+//        val authorsForBooks: Map<BookId, List<Author>> = bookService.getAuthorsForBooks(ByIds(bookIds))
+//        val result: Map<BookDto, List<AuthorDto>> = books.map {book ->
+//            val authors = authorsForBooks[BookId(book.id)]!!.map { author -> AuthorDto.map(author) }
+//            book to authors
+//        }.toMap()
+//        return result
+//    }
 }
 

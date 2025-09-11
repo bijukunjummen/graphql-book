@@ -1,6 +1,7 @@
 type Query {
     findBookById(id: ID): Book
     findAuthorById(id: ID): Author
+    findBooks(first: Int, after: String, sort: [Sort]): BookConnection
 }
 
 type Mutation {
@@ -65,4 +66,41 @@ input UpdateBookNameInput {
 
 type UpdateBookNamePayload {
     book: Book
+}
+
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String
+    endCursor: String
+}
+
+enum Order {
+    ASC
+    DESC
+}
+
+input Sort {
+    field: String
+    order: Order
+}
+
+interface Connection {
+    pageInfo: PageInfo!
+    totalCount: Int
+}
+
+interface Edge {
+    cursor: String!
+}
+
+type BookEdge implements Edge {
+    cursor: String!
+    node: Book
+}
+
+type BookConnection implements Connection {
+    edges: [BookEdge]
+    pageInfo: PageInfo!
+    totalCount: Int
 }

@@ -20,7 +20,8 @@ import java.util.UUID
 import java.util.stream.Collectors
 
 @Service
-class BookServiceImpl(private val bookRepository: BookRepository, private val authorService: AuthorService) : BookService {
+class BookServiceImpl(private val bookRepository: BookRepository, private val authorService: AuthorService) :
+    BookService {
     override fun createBook(createBookCommand: CreateBookCommand): Book {
         val bookId = UUID.randomUUID().toString()
 
@@ -28,10 +29,11 @@ class BookServiceImpl(private val bookRepository: BookRepository, private val au
             id = bookId,
             name = createBookCommand.name,
             pageCount = createBookCommand.pageCount,
-            authors = createBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }.toSet(),
+            authors = createBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }
+                .toSet(),
             version = 0
         )
-        val savedBook: BookEntity =  bookRepository.save(book)
+        val savedBook: BookEntity = bookRepository.save(book)
         return savedBook.toModel()
     }
 
@@ -44,7 +46,13 @@ class BookServiceImpl(private val bookRepository: BookRepository, private val au
                     val updatedBook = it.copy(
                         name = createOrUpdateBookCommand.name,
                         pageCount = createOrUpdateBookCommand.pageCount,
-                        authors = createOrUpdateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }.toSet(),
+                        authors = createOrUpdateBookCommand.authors.map { authorId ->
+                            AuthorRef(
+                                AggregateReference.to(
+                                    authorId.id
+                                )
+                            )
+                        }.toSet(),
                         version = createOrUpdateBookCommand.version
                     )
                     bookRepository.save(updatedBook)
@@ -55,7 +63,13 @@ class BookServiceImpl(private val bookRepository: BookRepository, private val au
                     id = createOrUpdateBookCommand.id,
                     name = createOrUpdateBookCommand.name,
                     pageCount = createOrUpdateBookCommand.pageCount,
-                    authors = createOrUpdateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }.toSet(),
+                    authors = createOrUpdateBookCommand.authors.map { authorId ->
+                        AuthorRef(
+                            AggregateReference.to(
+                                authorId.id
+                            )
+                        )
+                    }.toSet(),
                 )
                 bookRepository.save(newBook)
             })
@@ -68,16 +82,22 @@ class BookServiceImpl(private val bookRepository: BookRepository, private val au
         val updatedBook = book.copy(
             name = updateBookCommand.name,
             pageCount = updateBookCommand.pageCount,
-            authors = updateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }.toSet(),
+            authors = updateBookCommand.authors.map { authorId -> AuthorRef(AggregateReference.to(authorId.id)) }
+                .toSet(),
             version = updateBookCommand.version
         )
-        val savedBook: BookEntity =  bookRepository.save(updatedBook)
+        val savedBook: BookEntity = bookRepository.save(updatedBook)
         return savedBook.toModel()
     }
 
     override fun getBooks(getBooksQuery: GetBooksQuery): Page<Book> {
         return bookRepository
             .findAll(Pageable.ofSize(getBooksQuery.size).withPage(getBooksQuery.page))
+            .map { it.toModel() }
+    }
+
+    override fun getBooks(pageable: Pageable): Page<Book> {
+        return bookRepository.findAll(pageable)
             .map { it.toModel() }
     }
 
@@ -94,7 +114,8 @@ class BookServiceImpl(private val bookRepository: BookRepository, private val au
         val booksFromDb = getBooks(ids)
         val authorIds: List<AuthorId> = booksFromDb.flatMap { book -> book.authors }
         val authorsFromDb: List<Author> = authorService.getAuthors(ByIds(authorIds))
-        val authorsById: Map<AuthorId, Author> = authorsFromDb.stream().collect(Collectors.toMap({ a -> a.id }, { a -> a }))
+        val authorsById: Map<AuthorId, Author> =
+            authorsFromDb.stream().collect(Collectors.toMap({ a -> a.id }, { a -> a }))
         return booksFromDb.map { book ->
             val bookId = book.id
             val authors: List<Author> = book.authors.map { authorId -> authorsById[authorId]!! }
