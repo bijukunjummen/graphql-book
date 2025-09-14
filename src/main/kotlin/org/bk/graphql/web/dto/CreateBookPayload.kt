@@ -1,3 +1,3 @@
 package org.bk.graphql.web.dto
 
-data class CreateBookPayload(val book: BookDto)
+data class CreateBookPayload(val createdBook: BookDto)

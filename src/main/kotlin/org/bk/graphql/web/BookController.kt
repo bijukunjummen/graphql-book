@@ -1,16 +1,20 @@
 package org.bk.graphql.web
 
+import org.bk.graphql.domain.Author
 import org.bk.graphql.domain.AuthorId
 import org.bk.graphql.domain.Book
 import org.bk.graphql.domain.BookId
 import org.bk.graphql.service.BookService
 import org.bk.graphql.service.ById
+import org.bk.graphql.service.ByIds
 import org.bk.graphql.service.CreateBookCommand
+import org.bk.graphql.web.dto.AuthorDto
 import org.bk.graphql.web.dto.BookDto
 import org.bk.graphql.web.dto.CreateBookInput
 import org.bk.graphql.web.dto.CreateBookPayload
 import org.bk.graphql.web.dto.OrderField
 import org.bk.graphql.web.dto.SortInput
+import org.dataloader.DataLoader
 import org.springframework.data.domain.OffsetScrollPosition
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -18,14 +22,17 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.ScrollPosition
 import org.springframework.data.domain.Sort
 import org.springframework.graphql.data.method.annotation.Argument
+import org.springframework.graphql.data.method.annotation.BatchMapping
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping
 import org.springframework.graphql.data.query.ScrollSubrange
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import reactor.core.publisher.Flux
 import java.time.Duration
+import java.util.concurrent.CompletableFuture
 
 @Controller
 class BookController(private val bookService: BookService) {
@@ -53,6 +60,23 @@ class BookController(private val bookService: BookService) {
             .map { l ->  BookDto.map(bookService.getBook(ById(BookId(id))).orElseThrow())}
 
     }
+
+//    @SchemaMapping(typeName = "Book")
+//    fun authors(bookDto: BookDto, dataLoader: DataLoader<BookId, AuthorsWrapper>): CompletableFuture<List<AuthorDto>> {
+//        return dataLoader.load(BookId(bookDto.id)).thenApply { wrapper -> wrapper.authors }
+//    }
+
+    @BatchMapping(typeName = "Book")
+    fun authors(books: Set<BookDto>): Map<BookDto, List<AuthorDto>> {
+        val bookIds: List<BookId> = books.map { book -> BookId(book.id) }
+        val authorsForBooks: Map<BookId, List<Author>> = bookService.getAuthorsForBooks(ByIds(bookIds))
+        val result: Map<BookDto, List<AuthorDto>> = books.map {book ->
+            val authors = authorsForBooks[BookId(book.id)]!!.map { author -> AuthorDto.map(author) }
+            book to authors
+        }.toMap()
+        return result
+    }
+
 
     @QueryMapping
     fun findBooks(
