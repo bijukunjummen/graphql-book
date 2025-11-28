@@ -5,12 +5,12 @@ import org.bk.graphql.entity.AuthorRef
 import org.bk.graphql.entity.BookEntity
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
+import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.data.jdbc.core.mapping.AggregateReference
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.postgresql.PostgreSQLContainer
 
 @DataJdbcTest(properties = ["spring.test.database.replace=NONE"])
 @Testcontainers

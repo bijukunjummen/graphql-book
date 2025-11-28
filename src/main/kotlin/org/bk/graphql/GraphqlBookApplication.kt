@@ -1,6 +1,5 @@
 package org.bk.graphql
 
-import org.bk.graphql.domain.AuthorId
 import org.bk.graphql.service.AuthorService
 import org.bk.graphql.service.BookService
 import org.bk.graphql.service.CreateOrUpdateAuthorCommand
@@ -20,7 +19,7 @@ fun main(args: Array<String>) {
 
 @Service
 class LoadDb(val bookService: BookService, val authorService: AuthorService) : ApplicationRunner {
-    override fun run(args: ApplicationArguments?) {
+    override fun run(args: ApplicationArguments): Unit {
         val a1 = authorService.createOrUpdateAuthor(
             CreateOrUpdateAuthorCommand(
                 id = "37fac9c2-d25d-45b6-945e-2cfe2a5b835b",
