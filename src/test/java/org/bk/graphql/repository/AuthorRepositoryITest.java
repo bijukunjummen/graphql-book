@@ -3,8 +3,9 @@ package org.bk.graphql.repository;
 import org.bk.graphql.entity.AuthorEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest;
+import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -30,12 +31,12 @@ class AuthorRepositoryITest {
 
         assertThat(authorRepository.findById("id"))
             .hasValue(new AuthorEntity("id", "firstUpdated last", 2));
-        var page = authorRepository.findAll(Pageable.ofSize(5));
+        Page<AuthorEntity> page = authorRepository.findAll(Pageable.ofSize(5));
         assertThat(page.getTotalElements()).isEqualTo(1);
     }
 
     @ServiceConnection
     @Container
-    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15.5-bullseye");
+    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:16-alpine");
 }
 
