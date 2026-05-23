@@ -8,12 +8,15 @@ import org.bk.graphql.service.BookService;
 import org.bk.graphql.service.ById;
 import org.bk.graphql.service.ByIds;
 import org.bk.graphql.service.CreateBookCommand;
+import org.bk.graphql.service.UpdateBookNameCommand;
 import org.bk.graphql.web.dto.AuthorDto;
 import org.bk.graphql.web.dto.BookDto;
 import org.bk.graphql.web.dto.CreateBookInput;
 import org.bk.graphql.web.dto.CreateBookPayload;
 import org.bk.graphql.web.dto.OrderField;
 import org.bk.graphql.web.dto.SortInput;
+import org.bk.graphql.web.dto.UpdateBookNameInput;
+import org.bk.graphql.web.dto.UpdateBookNamePayload;
 import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +35,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Controller
@@ -43,7 +47,7 @@ public class BookController {
     }
 
     @QueryMapping
-    public BookDto findBookById(@Argument String id) {
+    public BookDto findBookById(@Argument UUID id) {
         return BookDto.map(bookService.getBook(new ById<>(new BookId(id))).orElseThrow());
     }
 
@@ -53,27 +57,35 @@ public class BookController {
             new CreateBookCommand(
                 input.name(),
                 input.pageCount(),
-                input.authors().stream().map(AuthorId::new).collect(Collectors.toSet())
+                input.authors().stream().map(AuthorId::parse).collect(Collectors.toSet())
             )
         );
         return new CreateBookPayload(BookDto.map(createdBook));
     }
 
+    @MutationMapping
+    public UpdateBookNamePayload updateBookName(@Argument UpdateBookNameInput input) {
+        Book updatedBook = bookService.updateBookName(
+            new UpdateBookNameCommand(input.id(), input.name(), input.version())
+        );
+        return new UpdateBookNamePayload(BookDto.map(updatedBook));
+    }
+
     @SubscriptionMapping
-    public Flux<BookDto> getABook(@Argument String id) {
+    public Flux<BookDto> getABook(@Argument BookId id) {
         return Flux.interval(Duration.ofSeconds(5))
-            .map(l -> BookDto.map(bookService.getBook(new ById<>(new BookId(id))).orElseThrow()));
+            .map(l -> BookDto.map(bookService.getBook(new ById<>(id)).orElseThrow()));
     }
 
     @BatchMapping(typeName = "Book")
     public Map<BookDto, List<AuthorDto>> authors(Set<BookDto> books) {
-        List<BookId> bookIds = books.stream().map(book -> new BookId(book.id())).toList();
+        List<BookId> bookIds = books.stream().map(book -> BookId.parse(book.id())).toList();
         Map<BookId, List<Author>> authorsForBooks = bookService.getAuthorsForBooks(new ByIds<>(bookIds));
         return books.stream()
             .collect(Collectors.toMap(
                 book -> book,
                 book -> {
-                    List<Author> authors = authorsForBooks.get(new BookId(book.id()));
+                    List<Author> authors = authorsForBooks.get(BookId.parse(book.id()));
                     return authors != null ? authors.stream().map(AuthorDto::map).toList() : List.of();
                 }
             ));
@@ -101,4 +113,3 @@ public class BookController {
         return page.map(BookDto::map);
     }
 }
-

@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJdbcTest(properties = "spring.test.database.replace=NONE")
 @Testcontainers
-class BookRepositoryTest {
+class BookRepositoryITest {
 
     @Autowired
     private BookRepository bookRepository;

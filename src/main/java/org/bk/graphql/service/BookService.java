@@ -14,10 +14,10 @@ public interface BookService {
     Book createBook(CreateBookCommand command);
     Book createOrUpdateBook(CreateOrUpdateBookCommand command);
     Book updateBook(UpdateBookCommand command);
+    Book updateBookName(UpdateBookNameCommand command);
     Page<Book> getBooks(GetBooksQuery query);
     Page<Book> getBooks(Pageable pageable);
     Optional<Book> getBook(ById<BookId> query);
     List<Book> getBooks(ByIds<BookId> query);
     Map<BookId, List<Author>> getAuthorsForBooks(ByIds<BookId> ids);
 }
-

@@ -97,7 +97,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Author getAuthor(ById<AuthorId> query) {
         return authorRepository
-            .findById(query.id().id())
+            .findById(query.id().toString())
             .orElseThrow(() -> new DomainException("Author not found"))
             .toModel();
     }
@@ -106,7 +106,7 @@ public class AuthorServiceImpl implements AuthorService {
     public List<Author> getAuthors(ByIds<AuthorId> query) {
         return StreamSupport.stream(
             authorRepository.findAllById(
-                query.ids().stream().map(AuthorId::id).toList()
+                query.ids().stream().map(AuthorId::id).map(UUID::toString).toList()
             ).spliterator(), false
         ).map(AuthorEntity::toModel).collect(java.util.stream.Collectors.toList());
     }

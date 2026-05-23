@@ -21,12 +21,12 @@ public record BookEntity(
 ) {
     public Book toModel() {
         return new Book(
-            new BookId(id),
+            BookId.parse(id),
             name,
             pageCount,
             authors.stream()
-                .map(author -> new AuthorId(author.author().getId()))
-                .collect(Collectors.toList()),
+                .map(author -> AuthorId.parse(author.author().getId()))
+                .toList(),
             version
         );
     }

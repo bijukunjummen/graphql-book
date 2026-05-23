@@ -11,8 +11,9 @@ import {
   Typography,
   Box,
   Chip,
+  Tooltip,
 } from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
+import { Delete, DriveFileRenameOutline } from '@mui/icons-material';
 import { useFindBooks } from '../hooks/useGraphQL';
 import BookForm from './BookForm';
 
@@ -113,18 +114,21 @@ const BookList: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell align="right">
-                    <IconButton
-                      onClick={() => handleEdit({
-                        id: book?.id || '',
-                        name: book?.name || '',
-                        pageCount: book?.pageCount,
-                        version: book?.version || 0,
-                        authors: book?.authors,
-                      })}
-                      color="primary"
-                    >
-                      <Edit />
-                    </IconButton>
+                    <Tooltip title="Update book name">
+                      <IconButton
+                        aria-label="Update book name"
+                        onClick={() => handleEdit({
+                          id: book?.id || '',
+                          name: book?.name || '',
+                          pageCount: book?.pageCount,
+                          version: book?.version || 0,
+                          authors: book?.authors,
+                        })}
+                        color="primary"
+                      >
+                        <DriveFileRenameOutline />
+                      </IconButton>
+                    </Tooltip>
                     <IconButton color="error" disabled>
                       <Delete />
                     </IconButton>

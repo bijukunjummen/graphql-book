@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -27,6 +27,10 @@ const AuthorForm: React.FC<AuthorFormProps> = ({ open, onClose, author }) => {
 
   const isEditing = !!author;
 
+  useEffect(() => {
+    setName(author?.name || '');
+  }, [author]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -51,8 +55,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({ open, onClose, author }) => {
         });
       }
       
-      setName('');
-      onClose();
+      handleClose();
     } catch (error) {
       console.error('Error saving author:', error);
     }
@@ -66,7 +69,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({ open, onClose, author }) => {
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {isEditing ? 'Edit Author' : 'Add New Author'}
+        {isEditing ? 'Update Author Name' : 'Add New Author'}
       </DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
@@ -74,7 +77,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({ open, onClose, author }) => {
             <TextField
               autoFocus
               margin="dense"
-              label="Author Name"
+              label={isEditing ? 'New Author Name' : 'Author Name'}
               fullWidth
               variant="outlined"
               value={name}
@@ -86,7 +89,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({ open, onClose, author }) => {
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button type="submit" variant="contained">
-            {isEditing ? 'Update' : 'Create'}
+            {isEditing ? 'Update Name' : 'Create'}
           </Button>
         </DialogActions>
       </form>

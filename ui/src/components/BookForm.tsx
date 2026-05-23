@@ -97,7 +97,7 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, book }) => {
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {isEditing ? 'Edit Book' : 'Add New Book'}
+        {isEditing ? 'Update Book Name' : 'Add New Book'}
       </DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
@@ -105,7 +105,7 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, book }) => {
             <TextField
               autoFocus
               margin="dense"
-              label="Book Name"
+              label={isEditing ? 'New Book Name' : 'Book Name'}
               fullWidth
               variant="outlined"
               value={name}
@@ -113,50 +113,52 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, book }) => {
               required
             />
             
-            <TextField
-              margin="dense"
-              label="Page Count"
-              type="number"
-              fullWidth
-              variant="outlined"
-              value={pageCount}
-              onChange={(e) => setPageCount(e.target.value)}
-            />
-
             {!isEditing && (
-              <FormControl fullWidth margin="dense">
-                <InputLabel>Authors</InputLabel>
-                <Select
-                  multiple
-                  value={selectedAuthors}
-                  onChange={(e) => setSelectedAuthors(e.target.value as string[])}
-                  input={<OutlinedInput label="Authors" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => {
-                        const author = authors.find((a: any) => a?.id === value);
-                        return (
-                          <Chip key={value} label={author?.name} size="small" />
-                        );
-                      })}
-                    </Box>
-                  )}
-                  required
-                >
-                  {authors.map((author: any) => (
-                    <MenuItem key={author?.id} value={author?.id}>
-                      {author?.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <>
+                <TextField
+                  margin="dense"
+                  label="Page Count"
+                  type="number"
+                  fullWidth
+                  variant="outlined"
+                  value={pageCount}
+                  onChange={(e) => setPageCount(e.target.value)}
+                />
+
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Authors</InputLabel>
+                  <Select
+                    multiple
+                    value={selectedAuthors}
+                    onChange={(e) => setSelectedAuthors(e.target.value as string[])}
+                    input={<OutlinedInput label="Authors" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => {
+                          const author = authors.find((a: any) => a?.id === value);
+                          return (
+                            <Chip key={value} label={author?.name} size="small" />
+                          );
+                        })}
+                      </Box>
+                    )}
+                    required
+                  >
+                    {authors.map((author: any) => (
+                      <MenuItem key={author?.id} value={author?.id}>
+                        {author?.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </>
             )}
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button type="submit" variant="contained">
-            {isEditing ? 'Update' : 'Create'}
+            {isEditing ? 'Update Name' : 'Create'}
           </Button>
         </DialogActions>
       </form>

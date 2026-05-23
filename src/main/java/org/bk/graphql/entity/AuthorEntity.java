@@ -13,7 +13,7 @@ public record AuthorEntity(
     @Version int version
 ) {
     public Author toModel() {
-        return new Author(new AuthorId(id), name, version);
+        return new Author(AuthorId.parse(id), name, version);
     }
 }
 

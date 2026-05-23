@@ -39,7 +39,7 @@ public class BookServiceImpl implements BookService {
             command.name(),
             command.pageCount(),
             command.authors().stream()
-                .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id())))
+                .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id().toString())))
                 .collect(Collectors.toSet()),
             0
         );
@@ -58,7 +58,7 @@ public class BookServiceImpl implements BookService {
                     command.name(),
                     command.pageCount(),
                     command.authors().stream()
-                        .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id())))
+                        .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id().toString())))
                         .collect(Collectors.toSet()),
                     command.version()
                 );
@@ -70,7 +70,7 @@ public class BookServiceImpl implements BookService {
                 command.name(),
                 command.pageCount(),
                 command.authors().stream()
-                    .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id())))
+                    .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id().toString())))
                     .collect(Collectors.toSet()),
                 0
             );
@@ -88,8 +88,23 @@ public class BookServiceImpl implements BookService {
             command.name(),
             command.pageCount(),
             command.authors().stream()
-                .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id())))
+                .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id().toString())))
                 .collect(Collectors.toSet()),
+            command.version()
+        );
+        BookEntity savedBook = bookRepository.save(updatedBook);
+        return savedBook.toModel();
+    }
+
+    @Override
+    public Book updateBookName(UpdateBookNameCommand command) {
+        BookEntity book = bookRepository.findById(command.id())
+            .orElseThrow(() -> new DomainException("Book not found"));
+        BookEntity updatedBook = new BookEntity(
+            book.id(),
+            command.name(),
+            book.pageCount(),
+            book.authors(),
             command.version()
         );
         BookEntity savedBook = bookRepository.save(updatedBook);
@@ -112,14 +127,14 @@ public class BookServiceImpl implements BookService {
     @Override
     public Optional<Book> getBook(ById<BookId> query) {
         BookId bookId = query.id();
-        return bookRepository.findById(bookId.id()).map(BookEntity::toModel);
+        return bookRepository.findById(bookId.id().toString()).map(BookEntity::toModel);
     }
 
     @Override
     public List<Book> getBooks(ByIds<BookId> query) {
         return StreamSupport.stream(
             bookRepository.findAllById(
-                query.ids().stream().map(BookId::id).toList()
+                query.ids().stream().map(BookId::id).map(UUID::toString).toList()
             ).spliterator(), false
         ).map(BookEntity::toModel).collect(java.util.stream.Collectors.toList());
     }
@@ -142,4 +157,3 @@ public class BookServiceImpl implements BookService {
             ));
     }
 }
-

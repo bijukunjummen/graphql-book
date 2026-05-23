@@ -140,8 +140,50 @@ class BookControllerTest {
             .path("createBook.createdBook.pageCount").entity(Integer.class).isEqualTo(250);
     }
 
+    @Test
+    void shouldUpdateBookName() {
+        var author = authorService.createOrUpdateAuthor(
+            new CreateOrUpdateAuthorCommand(
+                "f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e",
+                "Ursula K. Le Guin"
+            )
+        );
+
+        Book book = bookService.createOrUpdateBook(
+            new CreateOrUpdateBookCommand(
+                "d8d387ac-0b36-4d33-b6d2-9f1a4591ec35",
+                "A Wizard of Earthsea",
+                205,
+                Set.of(author.id())
+            )
+        );
+
+        String mutation = """
+            mutation {
+                updateBookName(input: {
+                    id: "d8d387ac-0b36-4d33-b6d2-9f1a4591ec35",
+                    name: "The Tombs of Atuan",
+                    version: %d
+                }) {
+                    book {
+                        id
+                        name
+                        pageCount
+                        version
+                    }
+                }
+            }
+            """.formatted(book.version());
+
+        graphQlTester.document(mutation)
+            .execute()
+            .path("updateBookName.book.id").entity(String.class).isEqualTo("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35")
+            .path("updateBookName.book.name").entity(String.class).isEqualTo("The Tombs of Atuan")
+            .path("updateBookName.book.pageCount").entity(Integer.class).isEqualTo(205)
+            .path("updateBookName.book.version").entity(Integer.class).isEqualTo(book.version() + 1);
+    }
+
     @ServiceConnection
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15.5-bullseye");
 }
-

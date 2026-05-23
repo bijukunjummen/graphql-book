@@ -11,8 +11,9 @@ import {
   Typography,
   Box,
   Chip,
+  Tooltip,
 } from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
+import { Delete, DriveFileRenameOutline } from '@mui/icons-material';
 import { useFindAuthors } from '../hooks/useGraphQL';
 import AuthorForm from './AuthorForm';
 
@@ -85,16 +86,19 @@ const AuthorList: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell align="right">
-                    <IconButton
-                      onClick={() => handleEdit({
-                        id: author?.id || '',
-                        name: author?.name || '',
-                        version: author?.version || 0,
-                      })}
-                      color="primary"
-                    >
-                      <Edit />
-                    </IconButton>
+                    <Tooltip title="Update author name">
+                      <IconButton
+                        aria-label="Update author name"
+                        onClick={() => handleEdit({
+                          id: author?.id || '',
+                          name: author?.name || '',
+                          version: author?.version || 0,
+                        })}
+                        color="primary"
+                      >
+                        <DriveFileRenameOutline />
+                      </IconButton>
+                    </Tooltip>
                     <IconButton color="error" disabled>
                       <Delete />
                     </IconButton>

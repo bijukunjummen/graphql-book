@@ -39,8 +39,8 @@ public class AuthorController {
     }
 
     @QueryMapping
-    public AuthorDto findAuthorById(@Argument String id) {
-        return AuthorDto.map(authorService.getAuthor(new ById<>(new AuthorId(id))));
+    public AuthorDto findAuthorById(@Argument AuthorId id) {
+        return AuthorDto.map(authorService.getAuthor(new ById<>(id)));
     }
 
     @MutationMapping
