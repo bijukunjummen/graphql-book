@@ -59,20 +59,6 @@ public class AuthorServiceImpl implements AuthorService {
         return authorEntity.toModel();
     }
 
-    @Override
-    public Author updateAuthor(UpdateAuthorCommand command) {
-        AuthorEntity author = authorRepository.findById(command.id())
-            .orElseThrow(() -> new DomainException("Author not found"));
-
-        AuthorEntity updatedAuthor = new AuthorEntity(
-            author.id(),
-            command.name(),
-            command.version()
-        );
-        AuthorEntity updatedAuthorEntity = authorRepository.save(updatedAuthor);
-        return updatedAuthorEntity.toModel();
-    }
-
     @Transactional
     @Override
     public Author updateAuthorName(UpdateAuthorNameCommand command) {
@@ -85,13 +71,6 @@ public class AuthorServiceImpl implements AuthorService {
         );
         AuthorEntity updatedEntity = authorRepository.save(updatedAuthor);
         return updatedEntity.toModel();
-    }
-
-    @Override
-    public Page<Author> getAuthors(GetAuthorsQuery query) {
-        return authorRepository
-            .findAll(Pageable.ofSize(query.size()).withPage(query.page()))
-            .map(AuthorEntity::toModel);
     }
 
     @Override

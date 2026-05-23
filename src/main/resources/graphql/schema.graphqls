@@ -10,6 +10,7 @@ type Mutation {
     updateAuthorName(input: UpdateAuthorNameInput): UpdateAuthorNamePayload
     createBook(input: CreateBookInput): CreateBookPayload
     updateBookName(input: UpdateBookNameInput): UpdateBookNamePayload
+    loadSampleData: LoadSampleDataPayload
 }
 
 type Subscription {
@@ -69,6 +70,11 @@ type UpdateBookNamePayload {
     book: Book
 }
 
+type LoadSampleDataPayload {
+    authorsLoaded: Int!
+    booksLoaded: Int!
+}
+
 type PageInfo {
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
@@ -88,7 +94,6 @@ input Sort {
 
 interface Connection {
     pageInfo: PageInfo!
-    totalCount: Int
 }
 
 interface Edge {
@@ -108,11 +113,9 @@ type AuthorEdge implements Edge {
 type BookConnection implements Connection {
     edges: [BookEdge]
     pageInfo: PageInfo!
-    totalCount: Int
 }
 
 type AuthorConnection implements Connection {
     edges: [AuthorEdge]
     pageInfo: PageInfo!
-    totalCount: Int
 }

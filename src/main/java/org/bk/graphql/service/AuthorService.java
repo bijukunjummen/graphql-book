@@ -10,9 +10,7 @@ import java.util.List;
 public interface AuthorService {
     Author createAuthor(CreateAuthorCommand createAuthorCommand);
     Author createOrUpdateAuthor(CreateOrUpdateAuthorCommand createOrUpdateAuthorCommand);
-    Author updateAuthor(UpdateAuthorCommand command);
     Author updateAuthorName(UpdateAuthorNameCommand command);
-    Page<Author> getAuthors(GetAuthorsQuery query);
     Author getAuthor(ById<AuthorId> query);
     List<Author> getAuthors(ByIds<AuthorId> query);
     Page<Author> getAuthors(Pageable pageable);

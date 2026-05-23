@@ -13,15 +13,11 @@ import org.bk.graphql.web.dto.AuthorDto;
 import org.bk.graphql.web.dto.BookDto;
 import org.bk.graphql.web.dto.CreateBookInput;
 import org.bk.graphql.web.dto.CreateBookPayload;
-import org.bk.graphql.web.dto.OrderField;
 import org.bk.graphql.web.dto.SortInput;
 import org.bk.graphql.web.dto.UpdateBookNameInput;
 import org.bk.graphql.web.dto.UpdateBookNamePayload;
-import org.springframework.data.domain.OffsetScrollPosition;
+import org.bk.graphql.web.pagination.ConnectionPageSupport;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.ScrollPosition;
-import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -41,9 +37,11 @@ import java.util.stream.Collectors;
 @Controller
 public class BookController {
     private final BookService bookService;
+    private final ConnectionPageSupport pagination;
 
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, ConnectionPageSupport pagination) {
         this.bookService = bookService;
+        this.pagination = pagination;
     }
 
     @QueryMapping
@@ -96,20 +94,6 @@ public class BookController {
         ScrollSubrange subrange,
         @Argument List<SortInput> sort
     ) {
-        if (sort == null) {
-            sort = List.of(new SortInput("name", OrderField.ASC));
-        }
-        OffsetScrollPosition scrollPosition = (OffsetScrollPosition) subrange.position()
-            .orElse(ScrollPosition.offset());
-        int limit = subrange.count().orElse(10);
-        int offset = scrollPosition.isInitial() ? 0 : (int) (scrollPosition.getOffset() + 1);
-        List<Sort.Order> orderList = sort.stream()
-            .map(s -> Sort.Order.by(s.field())
-                .with(s.order() == OrderField.ASC ? Sort.Direction.ASC : Sort.Direction.DESC))
-            .collect(Collectors.toList());
-        Sort sortObj = Sort.by(orderList);
-        PageRequest pageable = PageRequest.of(limit != 0 ? offset / limit : 0, limit, sortObj);
-        Page<Book> page = bookService.getBooks(pageable);
-        return page.map(BookDto::map);
+        return pagination.page(subrange, sort, pageable -> bookService.getBooks(pageable), BookDto::map);
     }
 }
