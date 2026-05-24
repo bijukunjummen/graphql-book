@@ -5,6 +5,10 @@ plugins {
 	id("java-test-fixtures")
 }
 
+ext {
+	immutablesVersion = "2.12.2"
+}
+
 group = 'org.bk.graphql'
 version = '0.0.1-SNAPSHOT'
 
@@ -36,6 +40,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-flyway'
 	implementation 'org.flywaydb:flyway-database-postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
+
+	annotationProcessor "org.immutables:value:$immutablesVersion"
+	compileOnly "org.immutables:value-annotations:$immutablesVersion"
 }
 
 tasks.named('test') {

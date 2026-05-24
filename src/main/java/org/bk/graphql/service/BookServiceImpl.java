@@ -62,10 +62,9 @@ public class BookServiceImpl implements BookService {
         Optional<BookEntity> book = bookRepository.findById(command.id());
 
         Instant now = clock.instant();
-        return book.map(exitingBook -> {
-
-            if (command.version() ==0) {
-                return exitingBook.toModel();
+        return book.map(existingBook -> {
+            if (command.version() == 0) {
+                return existingBook.toModel();
             }
             BookEntity updatedBook = new BookEntity(
                     book.get().id(),
@@ -74,7 +73,7 @@ public class BookServiceImpl implements BookService {
                     command.authors().stream()
                             .map(authorId -> new AuthorRef(AggregateReference.to(authorId.id().toString())))
                             .collect(Collectors.toSet()),
-                    exitingBook.createdAt(),
+                    existingBook.createdAt(),
                     now,
                     command.version()
             );

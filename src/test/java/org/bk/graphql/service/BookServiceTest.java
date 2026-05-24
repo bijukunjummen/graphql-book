@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
 import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +39,7 @@ import static org.bk.graphql.TimeTestData.DEFAULT_CREATED_DATE;
 import static org.bk.graphql.TimeTestData.DEFAULT_UPDATED_DATE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.assertArg;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
@@ -43,8 +48,10 @@ import static org.mockito.Mockito.when;
 class BookServiceTest {
     @InjectMocks
     private BookServiceImpl bookService;
+
     @Mock
     private BookRepository bookRepository;
+
     @Mock
     private AuthorService authorService;
 
@@ -82,8 +89,7 @@ class BookServiceTest {
         AuthorId authorId = AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d");
         BookEntity savedBook = bookEntity(bookId, "Good Omens", 490, 0, authorId);
         when(bookRepository.findById(bookId))
-                .thenReturn(Optional.empty())
-                .thenReturn(Optional.of(savedBook));
+                .thenReturn(Optional.empty());
         when(bookRepository.save(any(BookEntity.class))).thenReturn(savedBook);
 
         Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Good Omens", 490, Set.of(authorId)));
@@ -107,8 +113,7 @@ class BookServiceTest {
         BookEntity existingBook = bookEntity(bookId, "Good Omens", 490, 1, AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d"));
         BookEntity savedBook = bookEntity(bookId, "Good Omens Updated", 512, 2, authorId);
         when(bookRepository.findById(bookId))
-                .thenReturn(Optional.of(existingBook))
-                .thenReturn(Optional.of(savedBook));
+                .thenReturn(Optional.of(existingBook));
         when(bookRepository.save(any(BookEntity.class))).thenReturn(savedBook);
 
         Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Good Omens Updated", 512, Set.of(authorId), 2));
@@ -281,8 +286,8 @@ class BookServiceTest {
         String secondBookId = "c22ee984-7f74-4158-8bd5-79235b0ad051";
         AuthorId firstAuthorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         AuthorId secondAuthorId = AuthorId.parse("12c2d97c-4654-4398-bc0e-c40cf96715c6");
-        Author firstAuthor = new Author(firstAuthorId, "George Orwell", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1);
-        Author secondAuthor = new Author(secondAuthorId, "Aldous Huxley", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1);
+        Author firstAuthor = Author.create(firstAuthorId, "George Orwell", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1);
+        Author secondAuthor = Author.create(secondAuthorId, "Aldous Huxley", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1);
         when(bookRepository.findAllById(List.of(firstBookId, secondBookId)))
                 .thenReturn(List.of(
                         bookEntity(firstBookId, "1984", 328, 1, firstAuthorId),

@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -97,11 +98,10 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public List<Author> getAuthors(ByIds<AuthorId> query) {
-        return StreamSupport.stream(
-                authorRepository.findAllById(
-                        query.ids().stream().map(AuthorId::id).map(UUID::toString).toList()
-                ).spliterator(), false
-        ).map(AuthorEntity::toModel).collect(java.util.stream.Collectors.toList());
+        return authorRepository
+                .findAllByIdIn(query.ids().stream().map(id -> id.id().toString()).collect(Collectors.toSet()))
+                .stream().map(AuthorEntity::toModel)
+                .toList();
     }
 
     @Override

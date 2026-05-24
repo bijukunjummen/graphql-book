@@ -3,6 +3,7 @@ package org.bk.graphql.entity;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.domain.Book;
 import org.bk.graphql.domain.BookId;
+import org.bk.graphql.domain.ImmutableBook;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.MappedCollection;
@@ -23,16 +24,16 @@ public record BookEntity(
         @Version int version
 ) {
     public Book toModel() {
-        return new Book(
-                BookId.parse(id),
-                name,
-                pageCount,
-                authors.stream()
+        return ImmutableBook.builder()
+                .id(BookId.parse(id))
+                .name(name)
+                .pageCount(pageCount)
+                .authors(authors.stream()
                         .map(author -> AuthorId.parse(author.author().getId()))
-                        .toList(),
-                createdAt,
-                updatedAt,
-                version
-        );
+                        .toList())
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .version(version)
+                .build();
     }
 }
