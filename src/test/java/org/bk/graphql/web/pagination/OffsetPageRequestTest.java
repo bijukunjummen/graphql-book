@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 class OffsetPageRequestTest {
     @Test
-    void shouldExposeExactOffsetAndPageSize() {
+    void test_of_withOffsetPageSizeAndSort_returnsRequestWithExactValues() {
         Sort sort = Sort.by("name").descending();
 
         OffsetPageRequest request = OffsetPageRequest.of(7, 3, sort);
@@ -22,7 +22,7 @@ class OffsetPageRequestTest {
     }
 
     @Test
-    void shouldNavigateByOffset() {
+    void test_offsetPageRequestNavigation_withOffsetRequest_returnsExpectedOffsets() {
         OffsetPageRequest request = OffsetPageRequest.of(5, 2, Sort.by("name"));
 
         Pageable next = request.next();
@@ -37,7 +37,7 @@ class OffsetPageRequestTest {
     }
 
     @Test
-    void shouldRejectInvalidArguments() {
+    void test_offsetPageRequestValidation_withInvalidArguments_throwsIllegalArgumentException() {
         assertThatIllegalArgumentException()
             .isThrownBy(() -> OffsetPageRequest.of(-1, 10))
             .withMessage("Offset must not be negative");

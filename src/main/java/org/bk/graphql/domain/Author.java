@@ -1,5 +1,6 @@
 package org.bk.graphql.domain;
 
-public record Author(AuthorId id, String name, int version) {
-}
+import java.time.Instant;
 
+public record Author(AuthorId id, String name, Instant createdAt, Instant updatedAt, int version) {
+}

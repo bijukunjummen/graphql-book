@@ -51,7 +51,7 @@ class BookControllerTest {
     }
 
     @Test
-    void shouldFindBookById() {
+    void test_findBookById_withExistingBook_returnsBook() {
         var a12 = authorService.createOrUpdateAuthor(
             new CreateOrUpdateAuthorCommand(
                 "c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d",
@@ -95,7 +95,7 @@ class BookControllerTest {
     }
 
     @Test
-    void shouldCreateANewBook() {
+    void test_createBook_withValidInput_returnsCreatedBook() {
         String authorCreationMutation = """
             mutation myMutation($createAuthorInput: CreateAuthorInput) {
               createAuthor(input: $createAuthorInput) {
@@ -141,7 +141,7 @@ class BookControllerTest {
     }
 
     @Test
-    void shouldUpdateBookName() {
+    void test_updateBookName_withExistingBook_returnsRenamedBook() {
         var author = authorService.createOrUpdateAuthor(
             new CreateOrUpdateAuthorCommand(
                 "f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e",

@@ -48,7 +48,7 @@ class PaginationControllerTest {
     }
 
     @Test
-    void shouldPageAuthorsFromTheEndCursorWhenPageSizeChanges() {
+    void test_findAuthors_whenPageSizeChangesAfterEndCursor_returnsNextAuthorPage() {
         String query = """
             query authorPage($first: Int, $after: String) {
               findAuthors(first: $first, after: $after, sort: [{ field: "name", order: ASC }]) {
@@ -114,7 +114,7 @@ class PaginationControllerTest {
     }
 
     @Test
-    void shouldPageBooksFromTheEndCursorWhenPageSizeChanges() {
+    void test_findBooks_whenPageSizeChangesAfterEndCursor_returnsNextBookPage() {
         String query = """
             query bookPage($first: Int, $after: String) {
               findBooks(first: $first, after: $after, sort: [{ field: "name", order: ASC }]) {

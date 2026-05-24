@@ -10,24 +10,32 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 @Service
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
+    private final Clock clock;
 
-    public AuthorServiceImpl(AuthorRepository authorRepository) {
+    public AuthorServiceImpl(AuthorRepository authorRepository, Clock clock) {
         this.authorRepository = authorRepository;
+        this.clock = clock;
     }
 
     @Override
     public Author createAuthor(CreateAuthorCommand command) {
+        Instant now = clock.instant();
         AuthorEntity author = new AuthorEntity(
-            UUID.randomUUID().toString(),
-            command.name(),
-            0
+                UUID.randomUUID().toString(),
+                command.name(),
+                now,
+                now,
+                0
         );
         AuthorEntity savedAuthor = authorRepository.save(author);
         return savedAuthor.toModel();
@@ -35,39 +43,45 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Author createOrUpdateAuthor(CreateOrUpdateAuthorCommand command) {
-        var author = authorRepository.findById(command.id());
+        Optional<AuthorEntity> author = authorRepository.findById(command.id());
+        Instant now = clock.instant();
 
-        if (author.isPresent()) {
-            if (command.version() != 0) {
-                AuthorEntity updatedAuthor = new AuthorEntity(
+        return author.map(existingAuthor -> {
+            if (command.version() == 0) {
+                return existingAuthor.toModel();
+            }
+            AuthorEntity updatedAuthor = new AuthorEntity(
                     author.get().id(),
                     command.name(),
+                    existingAuthor.createdAt(),
+                    now,
                     command.version()
-                );
-                authorRepository.save(updatedAuthor);
-            }
-        } else {
-            AuthorEntity newAuthor = new AuthorEntity(
-                command.id(),
-                command.name(),
-                0
             );
-            authorRepository.save(newAuthor);
-        }
-        AuthorEntity authorEntity = authorRepository.findById(command.id())
-            .orElseThrow();
-        return authorEntity.toModel();
+            return authorRepository.save(updatedAuthor).toModel();
+        }).orElseGet(() -> {
+            AuthorEntity newAuthor = new AuthorEntity(
+                    command.id(),
+                    command.name(),
+                    now,
+                    now,
+                    0
+            );
+            return authorRepository.save(newAuthor).toModel();
+        });
     }
 
     @Transactional
     @Override
     public Author updateAuthorName(UpdateAuthorNameCommand command) {
         AuthorEntity author = authorRepository.findById(command.id())
-            .orElseThrow(() -> new DomainException("Author not found"));
+                .orElseThrow(() -> new DomainException("Author not found"));
+        Instant now = clock.instant();
         AuthorEntity updatedAuthor = new AuthorEntity(
-            author.id(),
-            command.name(),
-            command.version()
+                author.id(),
+                command.name(),
+                author.createdAt(),
+                now,
+                command.version()
         );
         AuthorEntity updatedEntity = authorRepository.save(updatedAuthor);
         return updatedEntity.toModel();
@@ -76,24 +90,24 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Author getAuthor(ById<AuthorId> query) {
         return authorRepository
-            .findById(query.id().toString())
-            .orElseThrow(() -> new DomainException("Author not found"))
-            .toModel();
+                .findById(query.id().toString())
+                .orElseThrow(() -> new DomainException("Author not found"))
+                .toModel();
     }
 
     @Override
     public List<Author> getAuthors(ByIds<AuthorId> query) {
         return StreamSupport.stream(
-            authorRepository.findAllById(
-                query.ids().stream().map(AuthorId::id).map(UUID::toString).toList()
-            ).spliterator(), false
+                authorRepository.findAllById(
+                        query.ids().stream().map(AuthorId::id).map(UUID::toString).toList()
+                ).spliterator(), false
         ).map(AuthorEntity::toModel).collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     public Page<Author> getAuthors(Pageable pageable) {
         return authorRepository.findAll(pageable)
-            .map(AuthorEntity::toModel);
+                .map(AuthorEntity::toModel);
     }
 }
 

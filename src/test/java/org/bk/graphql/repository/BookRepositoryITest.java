@@ -1,5 +1,6 @@
 package org.bk.graphql.repository;
 
+import org.bk.graphql.TimeTestData;
 import org.bk.graphql.entity.AuthorEntity;
 import org.bk.graphql.entity.AuthorRef;
 import org.bk.graphql.entity.BookEntity;
@@ -15,6 +16,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.bk.graphql.TimeTestData.DEFAULT_CREATED_DATE;
+import static org.bk.graphql.TimeTestData.DEFAULT_UPDATED_DATE;
 
 @DataJdbcTest(properties = "spring.test.database.replace=NONE")
 @Testcontainers
@@ -27,8 +30,8 @@ class BookRepositoryITest {
     private AuthorRepository authorRepository;
 
     @Test
-    void testCrudOperations() {
-        AuthorEntity author = new AuthorEntity("author-id", "first last", 0);
+    void test_bookRepositoryCrudOperations_withBookAndAuthor_returnsSavedBook() {
+        AuthorEntity author = new AuthorEntity("author-id", "first last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 0);
         authorRepository.save(author);
 
         BookEntity book = new BookEntity(
@@ -36,6 +39,8 @@ class BookRepositoryITest {
             "name",
             100,
             Set.of(new AuthorRef(AggregateReference.to("author-id"))),
+            DEFAULT_CREATED_DATE,
+            DEFAULT_UPDATED_DATE,
             0
         );
         bookRepository.save(book);
@@ -46,4 +51,3 @@ class BookRepositoryITest {
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15.5-bullseye");
 }
-
