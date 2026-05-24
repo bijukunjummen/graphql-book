@@ -30,6 +30,11 @@ export interface PageInfo {
   endCursor?: string | null;
 }
 
+export interface SortInput {
+  field: string;
+  order?: 'ASC' | 'DESC' | null;
+}
+
 export interface AuthorConnection {
   edges?: AuthorEdge[] | null;
   pageInfo: PageInfo;
@@ -80,3 +85,7 @@ export interface UpdateBookNamePayload {
   book?: Book | null;
 }
 
+export interface LoadSampleDataPayload {
+  authorsLoaded: number;
+  booksLoaded: number;
+}

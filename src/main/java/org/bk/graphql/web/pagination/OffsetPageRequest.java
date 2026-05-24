@@ -30,7 +30,7 @@ public record OffsetPageRequest(long offset, int pageSize, Sort sort) implements
 
     @Override
     public int getPageNumber() {
-        return (int) Math.ceil((double) offset / (double) pageSize);
+        return Math.toIntExact(offset / pageSize);
     }
 
     @Override

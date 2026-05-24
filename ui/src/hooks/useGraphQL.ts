@@ -5,7 +5,8 @@ import {
   CREATE_AUTHOR, 
   UPDATE_AUTHOR_NAME, 
   CREATE_BOOK, 
-  UPDATE_BOOK_NAME 
+  UPDATE_BOOK_NAME,
+  LOAD_SAMPLE_DATA
 } from '../graphql/operations';
 import type { 
   Author, 
@@ -15,18 +16,22 @@ import type {
   CreateAuthorInput,
   UpdateAuthorNameInput,
   CreateBookInput,
-  UpdateBookNameInput
+  UpdateBookNameInput,
+  LoadSampleDataPayload,
+  SortInput
 } from '../types/graphql';
 
-export const useFindAuthors = (first?: number, after?: string) => {
+const NAME_ASC: SortInput[] = [{ field: 'name', order: 'ASC' }];
+
+export const useFindAuthors = (first?: number, after?: string, sort: SortInput[] = NAME_ASC) => {
   return useQuery<{ findAuthors: AuthorConnection }>(FIND_AUTHORS, {
-    variables: { first: first || 100, after },
+    variables: { first: first ?? 10, after, sort },
   });
 };
 
-export const useFindBooks = (first?: number, after?: string) => {
+export const useFindBooks = (first?: number, after?: string, sort: SortInput[] = NAME_ASC) => {
   return useQuery<{ findBooks: BookConnection }>(FIND_BOOKS, {
-    variables: { first: first || 100, after },
+    variables: { first: first ?? 10, after, sort },
   });
 };
 
@@ -44,4 +49,8 @@ export const useCreateBook = () => {
 
 export const useUpdateBookName = () => {
   return useMutation<{ updateBookName: { book?: Book | null } }, { input: UpdateBookNameInput }>(UPDATE_BOOK_NAME);
+};
+
+export const useLoadSampleData = () => {
+  return useMutation<{ loadSampleData: LoadSampleDataPayload }>(LOAD_SAMPLE_DATA);
 };

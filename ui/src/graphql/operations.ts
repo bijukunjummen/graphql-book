@@ -140,3 +140,11 @@ export const UPDATE_BOOK_NAME = gql`
   }
 `;
 
+export const LOAD_SAMPLE_DATA = gql`
+  mutation LoadSampleData {
+    loadSampleData {
+      authorsLoaded
+      booksLoaded
+    }
+  }
+`;

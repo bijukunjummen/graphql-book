@@ -94,6 +94,7 @@ input Sort {
 
 interface Connection {
     pageInfo: PageInfo!
+    totalCount: Int
 }
 
 interface Edge {
@@ -113,9 +114,11 @@ type AuthorEdge implements Edge {
 type BookConnection implements Connection {
     edges: [BookEdge]
     pageInfo: PageInfo!
+    totalCount: Int
 }
 
 type AuthorConnection implements Connection {
     edges: [AuthorEdge]
     pageInfo: PageInfo!
+    totalCount: Int
 }

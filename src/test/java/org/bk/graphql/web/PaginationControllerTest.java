@@ -63,6 +63,7 @@ class PaginationControllerTest {
                   hasPreviousPage
                   endCursor
                 }
+                totalCount
               }
             }
             """;
@@ -106,6 +107,10 @@ class PaginationControllerTest {
             .path("findAuthors.pageInfo.hasPreviousPage")
             .entity(Boolean.class)
             .isEqualTo(true);
+        secondPage
+            .path("findAuthors.totalCount")
+            .entity(Integer.class)
+            .isEqualTo(13);
     }
 
     @Test
@@ -124,6 +129,7 @@ class PaginationControllerTest {
                   hasPreviousPage
                   endCursor
                 }
+                totalCount
               }
             }
             """;
@@ -167,6 +173,10 @@ class PaginationControllerTest {
             .path("findBooks.pageInfo.hasPreviousPage")
             .entity(Boolean.class)
             .isEqualTo(true);
+        secondPage
+            .path("findBooks.totalCount")
+            .entity(Integer.class)
+            .isEqualTo(12);
     }
 
     @ServiceConnection
