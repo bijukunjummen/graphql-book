@@ -5,6 +5,7 @@ import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.entity.AuthorEntity;
 import org.bk.graphql.repository.AuthorRepository;
 import org.bk.graphql.service.exception.DomainException;
+import org.bk.graphql.util.Uuids;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,25 +15,25 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
     private final Clock clock;
+    private final Uuids uuids;
 
-    public AuthorServiceImpl(AuthorRepository authorRepository, Clock clock) {
+    public AuthorServiceImpl(AuthorRepository authorRepository, Clock clock, Uuids uuids) {
         this.authorRepository = authorRepository;
         this.clock = clock;
+        this.uuids = uuids;
     }
 
     @Override
     public Author createAuthor(CreateAuthorCommand command) {
         Instant now = clock.instant();
         AuthorEntity author = new AuthorEntity(
-                UUID.randomUUID().toString(),
+                uuids.generateUuid().toString(),
                 command.name(),
                 now,
                 now,

@@ -1,11 +1,13 @@
 package org.bk.graphql.service;
 
+import org.bk.graphql.AuthorTestData;
 import org.bk.graphql.TimeTestData;
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.entity.AuthorEntity;
 import org.bk.graphql.repository.AuthorRepository;
 import org.bk.graphql.service.exception.DomainException;
+import org.bk.graphql.util.Uuids;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -47,7 +49,8 @@ class AuthorServiceTest {
     @Spy
     private Clock clock = TimeTestData.FIXED_CLOCK;
 
-    p
+    @Spy
+    private Uuids uuids = Uuids.fixedUuid(AuthorTestData.AUTHOR_ID_1.id());
 
     @Test
     void test_createAuthor_withValidCommand_returnsCreatedAuthorAndSavesEntity() {
@@ -57,14 +60,14 @@ class AuthorServiceTest {
         Author createdAuthor = authorService.createAuthor(new CreateAuthorCommand("George Orwell"));
 
         assertSoftly(softly -> {
-            softly.assertThat(createdAuthor.id()).isNotNull();
+            softly.assertThat(createdAuthor.id()).isEqualTo(AuthorTestData.AUTHOR_ID_1);
             softly.assertThat(createdAuthor.name()).isEqualTo("George Orwell");
             softly.assertThat(createdAuthor.createdAt()).isEqualTo(FIXED_CLOCK.instant());
             softly.assertThat(createdAuthor.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
             softly.assertThat(createdAuthor.version()).isZero();
         });
         verify(authorRepository).save(assertArg(savedAuthor -> assertSoftly(softly -> {
-            softly.assertThat(savedAuthor.id()).isNotBlank();
+            softly.assertThat(savedAuthor.id()).isEqualTo(AuthorTestData.AUTHOR_ID_1.id().toString());
             softly.assertThat(savedAuthor.name()).isEqualTo("George Orwell");
             softly.assertThat(savedAuthor.createdAt()).isEqualTo(FIXED_CLOCK.instant());
             softly.assertThat(savedAuthor.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
