@@ -1,5 +1,6 @@
 package org.bk.graphql.service;
 
+import org.bk.graphql.BookTestData;
 import org.bk.graphql.TimeTestData;
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
@@ -9,12 +10,12 @@ import org.bk.graphql.entity.AuthorRef;
 import org.bk.graphql.entity.BookEntity;
 import org.bk.graphql.repository.BookRepository;
 import org.bk.graphql.service.exception.DomainException;
+import org.bk.graphql.util.Uuids;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -25,27 +26,28 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
 import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.bk.graphql.BookTestData.BOOK_ID_1;
 import static org.bk.graphql.TimeTestData.DEFAULT_CREATED_DATE;
 import static org.bk.graphql.TimeTestData.DEFAULT_UPDATED_DATE;
+import static org.bk.graphql.TimeTestData.FIXED_CLOCK;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.assertArg;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BookServiceTest {
+    private static final UUID BOOK_ID = BOOK_ID_1.id();
+
     @InjectMocks
     private BookServiceImpl bookService;
 
@@ -58,6 +60,9 @@ class BookServiceTest {
     @Spy
     private Clock clock = TimeTestData.FIXED_CLOCK;
 
+    @Spy
+    private Uuids uuids = Uuids.fixedUuid(BOOK_ID);
+
     @Test
     void test_createBook_withValidCommand_returnsCreatedBookAndSavesEntity() {
         AuthorId authorId = AuthorId.parse("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
@@ -67,15 +72,17 @@ class BookServiceTest {
         Book createdBook = bookService.createBook(new CreateBookCommand("book1", 100, Set.of(authorId)));
 
         assertSoftly(softly -> {
-            softly.assertThat(createdBook.id()).isNotNull();
+            softly.assertThat(createdBook.id()).isEqualTo(BOOK_ID_1);
             softly.assertThat(createdBook.name()).isEqualTo("book1");
             softly.assertThat(createdBook.pageCount()).isEqualTo(100);
             softly.assertThat(createdBook.authors()).containsExactly(authorId);
         });
         verify(bookRepository).save(assertArg(savedBook -> assertSoftly(softly -> {
-            softly.assertThat(savedBook.id()).isNotBlank();
+            softly.assertThat(savedBook.id()).isEqualTo(BOOK_ID.toString());
             softly.assertThat(savedBook.name()).isEqualTo("book1");
             softly.assertThat(savedBook.pageCount()).isEqualTo(100);
+            softly.assertThat(savedBook.createdAt()).isEqualTo(FIXED_CLOCK.instant());
+            softly.assertThat(savedBook.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
             softly.assertThat(savedBook.authors())
                     .extracting(authorRef -> authorRef.author().getId())
                     .containsExactly(authorId.id().toString());

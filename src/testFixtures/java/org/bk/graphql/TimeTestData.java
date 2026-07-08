@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
-public class TimeTestData {
+public final class TimeTestData {
     public static Clock FIXED_CLOCK = Clock.fixed(
             LocalDateTime.of(2025, 03, 04, 0, 0, 0).toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
 

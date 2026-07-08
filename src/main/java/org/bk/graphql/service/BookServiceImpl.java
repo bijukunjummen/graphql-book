@@ -8,6 +8,7 @@ import org.bk.graphql.entity.AuthorRef;
 import org.bk.graphql.entity.BookEntity;
 import org.bk.graphql.repository.BookRepository;
 import org.bk.graphql.service.exception.DomainException;
+import org.bk.graphql.util.Uuids;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
@@ -27,19 +28,22 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final AuthorService authorService;
     private final Clock clock;
+    private final Uuids uuids;
 
     public BookServiceImpl(
             BookRepository bookRepository,
             AuthorService authorService,
-            Clock clock) {
+            Clock clock,
+            Uuids uuids) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.clock = clock;
+        this.uuids = uuids;
     }
 
     @Override
     public Book createBook(CreateBookCommand command) {
-        String bookId = UUID.randomUUID().toString();
+        String bookId = uuids.generateUuid().toString();
 
         Instant now = clock.instant();
         BookEntity book = new BookEntity(
