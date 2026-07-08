@@ -11,7 +11,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Table("books")
 public record BookEntity(

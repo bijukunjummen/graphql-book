@@ -1,7 +1,9 @@
 package org.bk.graphql.util;
 
+import java.util.Objects;
 import java.util.UUID;
 
+@FunctionalInterface
 public interface Uuids {
     Uuids SYSTEM = new SystemUuids();
 
@@ -12,7 +14,7 @@ public interface Uuids {
     }
 
     static Uuids fixedUuid(UUID uuid) {
-        return new FixedUuids(uuid);
+        return new FixedUuids(Objects.requireNonNull(uuid, "uuid must not be null"));
     }
 
     final class SystemUuids implements Uuids {
