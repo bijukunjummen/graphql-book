@@ -1,14 +1,21 @@
 package org.bk.graphql.service;
 
-import org.bk.graphql.BookTestData;
 import org.bk.graphql.TimeTestData;
+import org.bk.graphql.common.query.ById;
+import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.domain.Book;
 import org.bk.graphql.domain.BookId;
-import org.bk.graphql.entity.AuthorRef;
 import org.bk.graphql.entity.BookEntity;
-import org.bk.graphql.repository.BookRepository;
+import org.bk.graphql.repository.book.BookRepository;
+import org.bk.graphql.service.author.AuthorService;
+import org.bk.graphql.service.book.BookCommands.CreateBookCommand;
+import org.bk.graphql.service.book.BookCommands.CreateOrUpdateBookCommand;
+import org.bk.graphql.service.book.BookCommands.UpdateBookCommand;
+import org.bk.graphql.service.book.BookCommands.UpdateBookNameCommand;
+import org.bk.graphql.service.book.BookQueries;
+import org.bk.graphql.service.book.BookServiceImpl;
 import org.bk.graphql.service.exception.DomainException;
 import org.bk.graphql.util.Uuids;
 import org.junit.jupiter.api.Test;
@@ -23,7 +30,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
 import java.time.Clock;
 import java.util.List;
@@ -75,7 +81,6 @@ class BookServiceTest {
             softly.assertThat(createdBook.id()).isEqualTo(BOOK_ID_1);
             softly.assertThat(createdBook.name()).isEqualTo("book1");
             softly.assertThat(createdBook.pageCount()).isEqualTo(100);
-            softly.assertThat(createdBook.authors()).containsExactly(authorId);
         });
         verify(bookRepository).save(assertArg(savedBook -> assertSoftly(softly -> {
             softly.assertThat(savedBook.id()).isEqualTo(BOOK_ID.toString());
@@ -83,9 +88,6 @@ class BookServiceTest {
             softly.assertThat(savedBook.pageCount()).isEqualTo(100);
             softly.assertThat(savedBook.createdAt()).isEqualTo(FIXED_CLOCK.instant());
             softly.assertThat(savedBook.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
-            softly.assertThat(savedBook.authors())
-                    .extracting(authorRef -> authorRef.author().getId())
-                    .containsExactly(authorId.id().toString());
             softly.assertThat(savedBook.version()).isZero();
         })));
     }
@@ -106,9 +108,6 @@ class BookServiceTest {
             softly.assertThat(savedBookEntity.id()).isEqualTo(bookId);
             softly.assertThat(savedBookEntity.name()).isEqualTo("Good Omens");
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(490);
-            softly.assertThat(savedBookEntity.authors())
-                    .extracting(authorRef -> authorRef.author().getId())
-                    .containsExactly(authorId.id().toString());
             softly.assertThat(savedBookEntity.version()).isZero();
         })));
     }
@@ -130,9 +129,6 @@ class BookServiceTest {
             softly.assertThat(savedBookEntity.id()).isEqualTo(bookId);
             softly.assertThat(savedBookEntity.name()).isEqualTo("Good Omens Updated");
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(512);
-            softly.assertThat(savedBookEntity.authors())
-                    .extracting(authorRef -> authorRef.author().getId())
-                    .containsExactly(authorId.id().toString());
             softly.assertThat(savedBookEntity.version()).isEqualTo(2);
         })));
     }
@@ -166,9 +162,6 @@ class BookServiceTest {
             softly.assertThat(savedBookEntity.id()).isEqualTo(bookId);
             softly.assertThat(savedBookEntity.name()).isEqualTo("The Tombs of Atuan");
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(180);
-            softly.assertThat(savedBookEntity.authors())
-                    .extracting(authorRef -> authorRef.author().getId())
-                    .containsExactly(authorId.id().toString());
             softly.assertThat(savedBookEntity.version()).isEqualTo(2);
         })));
     }
@@ -201,7 +194,6 @@ class BookServiceTest {
             softly.assertThat(savedBookEntity.id()).isEqualTo(bookId);
             softly.assertThat(savedBookEntity.name()).isEqualTo("The Tombs of Atuan");
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(205);
-            softly.assertThat(savedBookEntity.authors()).isEqualTo(existingBook.authors());
             softly.assertThat(savedBookEntity.version()).isEqualTo(2);
         })));
     }
@@ -225,7 +217,7 @@ class BookServiceTest {
         when(bookRepository.findAll(any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(bookEntity(bookId, "1984", 328, 1, authorId))));
 
-        Page<Book> page = bookService.getBooks(new GetBooksQuery(2, 5));
+        Page<Book> page = bookService.getBooks(new BookQueries.GetBooksQuery(2, 5));
 
         assertThat(page.getContent())
                 .singleElement()
@@ -313,19 +305,15 @@ class BookServiceTest {
     }
 
     private static BookEntity bookEntity(String id, String name, int pageCount, int version, AuthorId authorId) {
-        return new BookEntity(id, name, pageCount, Set.of(authorRef(authorId)), DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, version);
+        return new BookEntity(id, name, pageCount, DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, version);
     }
 
-    private static AuthorRef authorRef(AuthorId authorId) {
-        return new AuthorRef(AggregateReference.to(authorId.id().toString()));
-    }
 
     private static void assertBook(Book book, String id, String name, int pageCount, int version, AuthorId authorId) {
         assertSoftly(softly -> {
             softly.assertThat(book.id()).isEqualTo(BookId.parse(id));
             softly.assertThat(book.name()).isEqualTo(name);
             softly.assertThat(book.pageCount()).isEqualTo(pageCount);
-            softly.assertThat(book.authors()).containsExactly(authorId);
             softly.assertThat(book.version()).isEqualTo(version);
         });
     }

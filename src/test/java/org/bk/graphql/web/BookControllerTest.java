@@ -1,14 +1,11 @@
 package org.bk.graphql.web;
 
-import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.domain.Book;
-import org.bk.graphql.domain.BookId;
-import org.bk.graphql.service.AuthorService;
-import org.bk.graphql.service.BookService;
-import org.bk.graphql.service.CreateOrUpdateAuthorCommand;
-import org.bk.graphql.service.CreateOrUpdateBookCommand;
+import org.bk.graphql.service.author.AuthorService;
+import org.bk.graphql.service.author.CreateOrUpdateAuthorCommand;
+import org.bk.graphql.service.book.BookCommands.CreateOrUpdateBookCommand;
+import org.bk.graphql.service.book.BookService;
 import org.bk.graphql.web.dto.CreateAuthorInput;
-import org.bk.graphql.web.dto.CreateBookInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +19,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.List;
 import java.util.Set;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

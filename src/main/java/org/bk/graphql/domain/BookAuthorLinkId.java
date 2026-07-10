@@ -1,0 +1,9 @@
+package org.bk.graphql.domain;
+
+import java.util.UUID;
+
+public record BookAuthorLinkId(UUID id) {
+    public static BookAuthorLinkId parse(String id) {
+        return new BookAuthorLinkId(UUID.fromString(id));
+    }
+}

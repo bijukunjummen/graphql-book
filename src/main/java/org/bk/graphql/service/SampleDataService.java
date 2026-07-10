@@ -1,6 +1,10 @@
 package org.bk.graphql.service;
 
 import org.bk.graphql.domain.Author;
+import org.bk.graphql.service.author.AuthorService;
+import org.bk.graphql.service.author.CreateOrUpdateAuthorCommand;
+import org.bk.graphql.service.book.BookCommands.CreateOrUpdateBookCommand;
+import org.bk.graphql.service.book.BookService;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;

@@ -2,10 +2,10 @@ package org.bk.graphql.web;
 
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
-import org.bk.graphql.service.AuthorService;
-import org.bk.graphql.service.ById;
-import org.bk.graphql.service.CreateAuthorCommand;
-import org.bk.graphql.service.UpdateAuthorNameCommand;
+import org.bk.graphql.service.author.AuthorService;
+import org.bk.graphql.common.query.ById;
+import org.bk.graphql.service.author.CreateAuthorCommand;
+import org.bk.graphql.service.author.UpdateAuthorNameCommand;
 import org.bk.graphql.web.dto.AuthorDto;
 import org.bk.graphql.web.dto.CreateAuthorInput;
 import org.bk.graphql.web.dto.CreateAuthorPayload;

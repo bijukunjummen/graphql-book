@@ -2,8 +2,8 @@ package org.bk.graphql.web;
 
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.BookId;
-import org.bk.graphql.service.BookService;
-import org.bk.graphql.service.ByIds;
+import org.bk.graphql.service.book.BookService;
+import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.web.dto.AuthorDto;
 import org.dataloader.BatchLoaderEnvironment;
 import reactor.core.publisher.Mono;
@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import org.bk.graphql.web.AuthorsWrapper;
 
 public class BookAuthorsDataLoader implements BiFunction<Set<BookId>, BatchLoaderEnvironment, Mono<Map<BookId, AuthorsWrapper>>> {
     private final BookService bookService;

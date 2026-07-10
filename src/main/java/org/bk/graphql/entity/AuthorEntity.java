@@ -27,4 +27,14 @@ public record AuthorEntity(
                 .build();
     }
 
+    public static AuthorEntity fromModel(Author author) {
+        return new AuthorEntity(
+                author.id().id().toString(),
+                author.name(),
+                author.createdAt(),
+                author.updatedAt(),
+                author.version()
+        );
+    }
+
 }

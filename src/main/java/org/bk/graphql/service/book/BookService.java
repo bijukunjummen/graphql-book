@@ -1,8 +1,15 @@
-package org.bk.graphql.service;
+package org.bk.graphql.service.book;
 
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.Book;
 import org.bk.graphql.domain.BookId;
+import org.bk.graphql.common.query.ById;
+import org.bk.graphql.common.query.ByIds;
+import org.bk.graphql.service.book.BookCommands.CreateBookCommand;
+import org.bk.graphql.service.book.BookCommands.CreateOrUpdateBookCommand;
+import org.bk.graphql.service.book.BookCommands.UpdateBookCommand;
+import org.bk.graphql.service.book.BookCommands.UpdateBookNameCommand;
+import org.bk.graphql.service.book.BookQueries.GetBooksQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -1,9 +1,11 @@
-package org.bk.graphql.service;
+package org.bk.graphql.service.author;
 
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.entity.AuthorEntity;
-import org.bk.graphql.repository.AuthorRepository;
+import org.bk.graphql.repository.author.AuthorRepository;
+import org.bk.graphql.common.query.ById;
+import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.service.exception.DomainException;
 import org.bk.graphql.util.Uuids;
 import org.springframework.data.domain.Page;

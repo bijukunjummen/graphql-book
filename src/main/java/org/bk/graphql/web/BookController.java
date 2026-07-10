@@ -1,14 +1,14 @@
 package org.bk.graphql.web;
 
+import org.bk.graphql.common.query.ById;
+import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.domain.Book;
 import org.bk.graphql.domain.BookId;
-import org.bk.graphql.service.BookService;
-import org.bk.graphql.service.ById;
-import org.bk.graphql.service.ByIds;
-import org.bk.graphql.service.CreateBookCommand;
-import org.bk.graphql.service.UpdateBookNameCommand;
+import org.bk.graphql.service.book.BookCommands.CreateBookCommand;
+import org.bk.graphql.service.book.BookCommands.UpdateBookNameCommand;
+import org.bk.graphql.service.book.BookService;
 import org.bk.graphql.web.dto.AuthorDto;
 import org.bk.graphql.web.dto.BookDto;
 import org.bk.graphql.web.dto.CreateBookInput;

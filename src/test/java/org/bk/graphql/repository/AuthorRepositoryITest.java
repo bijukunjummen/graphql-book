@@ -2,6 +2,7 @@ package org.bk.graphql.repository;
 
 import org.bk.graphql.TimeTestData;
 import org.bk.graphql.entity.AuthorEntity;
+import org.bk.graphql.repository.author.AuthorRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;

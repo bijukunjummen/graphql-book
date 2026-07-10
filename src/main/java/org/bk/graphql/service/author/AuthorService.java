@@ -1,7 +1,9 @@
-package org.bk.graphql.service;
+package org.bk.graphql.service.author;
 
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
+import org.bk.graphql.common.query.ById;
+import org.bk.graphql.common.query.ByIds;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

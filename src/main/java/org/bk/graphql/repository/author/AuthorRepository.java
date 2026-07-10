@@ -1,4 +1,4 @@
-package org.bk.graphql.repository;
+package org.bk.graphql.repository.author;
 
 import org.bk.graphql.entity.AuthorEntity;
 import org.springframework.data.repository.CrudRepository;

@@ -1,4 +1,4 @@
-package org.bk.graphql.service;
+package org.bk.graphql.common.query;
 
 import java.util.List;
 

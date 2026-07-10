@@ -2,10 +2,16 @@ package org.bk.graphql.service;
 
 import org.bk.graphql.AuthorTestData;
 import org.bk.graphql.TimeTestData;
+import org.bk.graphql.common.query.ById;
+import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.entity.AuthorEntity;
-import org.bk.graphql.repository.AuthorRepository;
+import org.bk.graphql.repository.author.AuthorRepository;
+import org.bk.graphql.service.author.AuthorServiceImpl;
+import org.bk.graphql.service.author.CreateAuthorCommand;
+import org.bk.graphql.service.author.CreateOrUpdateAuthorCommand;
+import org.bk.graphql.service.author.UpdateAuthorNameCommand;
 import org.bk.graphql.service.exception.DomainException;
 import org.bk.graphql.util.Uuids;
 import org.junit.jupiter.api.Test;
