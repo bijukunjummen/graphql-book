@@ -9,6 +9,7 @@ import java.util.List;
 public interface Book {
     BookId id();
     String name();
+    List<AuthorId> authors();
     int pageCount();
     Instant createdAt();
     Instant updatedAt();

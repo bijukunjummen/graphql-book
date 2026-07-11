@@ -1,9 +1,9 @@
 package org.bk.graphql.web;
 
+import org.bk.graphql.application.BookAuthorManagementService;
+import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.BookId;
-import org.bk.graphql.service.book.BookService;
-import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.web.dto.AuthorDto;
 import org.dataloader.BatchLoaderEnvironment;
 import reactor.core.publisher.Mono;
@@ -15,16 +15,16 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class BookAuthorsDataLoader implements BiFunction<Set<BookId>, BatchLoaderEnvironment, Mono<Map<BookId, BookAuthorsDataLoader.AuthorsWrapper>>> {
-    private final BookService bookService;
+    private final BookAuthorManagementService bookAuthorManagementService;
 
-    public BookAuthorsDataLoader(BookService bookService) {
-        this.bookService = bookService;
+    public BookAuthorsDataLoader(BookAuthorManagementService bookAuthorManagementService) {
+        this.bookAuthorManagementService = bookAuthorManagementService;
     }
 
     @Override
     public Mono<Map<BookId, AuthorsWrapper>> apply(Set<BookId> bookIds, BatchLoaderEnvironment u) {
         return Mono.fromSupplier(() -> {
-            Map<BookId, List<Author>> authorsForBooks = bookService.getAuthorsForBooks(new ByIds<>(bookIds.stream().toList()));
+            Map<BookId, List<Author>> authorsForBooks = bookAuthorManagementService.getAuthorsForBooks(new ByIds<>(bookIds.stream().toList()));
             return authorsForBooks.entrySet().stream()
                 .collect(Collectors.toMap(
                     Map.Entry::getKey,

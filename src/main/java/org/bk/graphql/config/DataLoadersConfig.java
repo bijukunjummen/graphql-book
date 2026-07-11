@@ -1,6 +1,6 @@
 package org.bk.graphql.config;
 
-import org.bk.graphql.service.book.BookService;
+import org.bk.graphql.application.BookAuthorManagementService;
 import org.bk.graphql.web.BookAuthorsDataLoader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 public class DataLoadersConfig {
 
     @Bean
-    public BookAuthorsDataLoader bookAuthorsDataLoader(BookService bookService) {
-        return new BookAuthorsDataLoader(bookService);
+    public BookAuthorsDataLoader bookAuthorsDataLoader(BookAuthorManagementService bookAuthorManagementService) {
+        return new BookAuthorsDataLoader(bookAuthorManagementService);
     }
 }
 

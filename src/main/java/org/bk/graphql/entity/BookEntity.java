@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Table("books")
@@ -28,6 +29,8 @@ public record BookEntity(
                 .id(BookId.of(id))
                 .name(name)
                 .pageCount(pageCount)
+                //Placeholder..will be filled in later.
+                .authors(List.of())
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .version(version)

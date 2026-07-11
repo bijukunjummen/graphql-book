@@ -1,15 +1,15 @@
 package org.bk.graphql.service.book;
 
-import org.bk.graphql.domain.Author;
+import org.bk.graphql.common.query.ById;
+import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.domain.Book;
 import org.bk.graphql.domain.BookId;
+import org.bk.graphql.domain.ImmutableBook;
+import org.bk.graphql.entity.BookAuthorLinkEntity;
 import org.bk.graphql.entity.BookEntity;
 import org.bk.graphql.repository.book.BookRepository;
-import org.bk.graphql.common.query.ById;
-import org.bk.graphql.common.query.ByIds;
-import org.bk.graphql.service.author.AuthorService;
-import org.bk.graphql.service.bookauthorlink.BookAuthorLinkService;
+import org.bk.graphql.repository.bookauthorlink.BookAuthorLinkRepository;
 import org.bk.graphql.service.book.BookCommands.CreateBookCommand;
 import org.bk.graphql.service.book.BookCommands.CreateOrUpdateBookCommand;
 import org.bk.graphql.service.book.BookCommands.UpdateBookCommand;
@@ -20,39 +20,35 @@ import org.bk.graphql.util.Uuids;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
-    private final BookAuthorLinkService bookAuthorLinkService;
-    private final AuthorService authorService;
+    private final BookAuthorLinkRepository bookAuthorLinkRepository;
     private final Clock clock;
     private final Uuids uuids;
 
     public BookServiceImpl(
             BookRepository bookRepository,
-            BookAuthorLinkService bookAuthorLinkService,
-            AuthorService authorService,
+            BookAuthorLinkRepository bookAuthorLinkRepository,
             Clock clock,
             Uuids uuids) {
         this.bookRepository = bookRepository;
-        this.bookAuthorLinkService = bookAuthorLinkService;
-        this.authorService = authorService;
+        this.bookAuthorLinkRepository = bookAuthorLinkRepository;
         this.clock = clock;
         this.uuids = uuids;
     }
 
     @Override
+    @Transactional
     public Book createBook(CreateBookCommand command) {
         UUID bookId = uuids.generateUuid();
 
@@ -66,11 +62,18 @@ public class BookServiceImpl implements BookService {
                 0
         );
         BookEntity savedBook = bookRepository.save(book);
-        bookAuthorLinkService.replaceAuthorsForBook(BookId.of(savedBook.id()), command.authors());
-        return savedBook.toModel();
+        final List<BookAuthorLinkEntity> bookAuthorLinks = command.authors().stream().map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid(), savedBook.id(), authorId.id(), now, now))
+                .distinct()
+                .toList();
+        bookAuthorLinkRepository.upsertAll(bookAuthorLinks);
+        Book withoutAuthors = savedBook.toModel();
+        return ImmutableBook.builder().from(withoutAuthors)
+                .authors(bookAuthorLinks.stream().map(link -> AuthorId.of(link.authorId())).toList())
+                .build();
     }
 
     @Override
+    @Transactional
     public Book createOrUpdateBook(CreateOrUpdateBookCommand command) {
         Optional<BookEntity> book = bookRepository.findById(command.id());
 
@@ -88,8 +91,13 @@ public class BookServiceImpl implements BookService {
                     command.version()
             );
             BookEntity savedBook = bookRepository.save(updatedBook);
-            bookAuthorLinkService.replaceAuthorsForBook(BookId.of(savedBook.id()), command.authors());
-            return savedBook.toModel();
+            List<BookAuthorLinkEntity> bookAuthorLinks = command.authors().stream().map(authorId ->
+                    new BookAuthorLinkEntity(uuids.generateUuid(), updatedBook.id(), authorId.id(), now, now)).toList();
+            bookAuthorLinkRepository.upsertAll(bookAuthorLinks);
+            Book withoutAuthors = savedBook.toModel();
+            return ImmutableBook.builder().from(withoutAuthors)
+                    .authors(bookAuthorLinks.stream().map(link -> AuthorId.of(link.authorId())).toList())
+                    .build();
         }).orElseGet(() -> {
             BookEntity newBook = new BookEntity(
                     command.id(),
@@ -100,8 +108,14 @@ public class BookServiceImpl implements BookService {
                     0
             );
             BookEntity savedBook = bookRepository.save(newBook);
-            bookAuthorLinkService.replaceAuthorsForBook(BookId.of(savedBook.id()), command.authors());
-            return savedBook.toModel();
+            final List<BookAuthorLinkEntity> bookAuthorLinks = command.authors().stream().map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid(), savedBook.id(), authorId.id(), now, now))
+                    .distinct()
+                    .toList();
+            bookAuthorLinkRepository.upsertAll(bookAuthorLinks);
+            Book withoutAuthors = savedBook.toModel();
+            return ImmutableBook.builder().from(withoutAuthors)
+                    .authors(bookAuthorLinks.stream().map(link -> AuthorId.of(link.authorId())).toList())
+                    .build();
         });
     }
 
@@ -119,8 +133,13 @@ public class BookServiceImpl implements BookService {
                 command.version()
         );
         BookEntity savedBook = bookRepository.save(updatedBook);
-        bookAuthorLinkService.replaceAuthorsForBook(BookId.of(savedBook.id()), command.authors());
-        return savedBook.toModel();
+        List<BookAuthorLinkEntity> bookAuthorLinks = command.authors().stream().map(authorId ->
+                new BookAuthorLinkEntity(uuids.generateUuid(), updatedBook.id(), authorId.id(), now, now)).toList();
+        bookAuthorLinkRepository.upsertAll(bookAuthorLinks);
+        Book withoutAuthors = savedBook.toModel();
+        return ImmutableBook.builder().from(withoutAuthors)
+                .authors(bookAuthorLinks.stream().map(link -> AuthorId.of(link.authorId())).toList())
+                .build();
     }
 
     @Override
@@ -165,32 +184,5 @@ public class BookServiceImpl implements BookService {
                         query.ids().stream().map(BookId::id).toList()
                 ).spliterator(), false
         ).map(BookEntity::toModel).collect(java.util.stream.Collectors.toList());
-    }
-
-    @Override
-    public Map<BookId, List<Author>> getAuthorsForBooks(ByIds<BookId> ids) {
-        Map<BookId, List<AuthorId>> authorIdsForBooks = bookAuthorLinkService.getAuthorIdsForBooks(ids);
-        List<AuthorId> authorIds = authorIdsForBooks.values().stream()
-                .flatMap(List::stream)
-                .distinct()
-                .toList();
-        if (authorIds.isEmpty()) {
-            return ids.ids().stream().collect(Collectors.toMap(
-                    bookId -> bookId,
-                    bookId -> List.of()
-            ));
-        }
-        List<Author> authorsFromDb = authorService.getAuthors(new ByIds<>(authorIds));
-        Map<AuthorId, Author> authorsById = authorsFromDb.stream()
-                .collect(Collectors.toMap(Author::id, a -> a));
-
-        return ids.ids().stream()
-                .collect(Collectors.toMap(
-                        bookId -> bookId,
-                        bookId -> authorIdsForBooks.getOrDefault(bookId, List.of()).stream()
-                                .map(authorsById::get)
-                                .filter(Objects::nonNull)
-                                .toList()
-                ));
     }
 }

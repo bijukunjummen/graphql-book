@@ -3,12 +3,12 @@ package org.bk.graphql.service;
 import org.bk.graphql.TimeTestData;
 import org.bk.graphql.common.query.ById;
 import org.bk.graphql.common.query.ByIds;
-import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.domain.Book;
 import org.bk.graphql.domain.BookId;
 import org.bk.graphql.entity.BookEntity;
 import org.bk.graphql.repository.book.BookRepository;
+import org.bk.graphql.repository.bookauthorlink.BookAuthorLinkRepository;
 import org.bk.graphql.service.author.AuthorService;
 import org.bk.graphql.service.book.BookCommands.CreateBookCommand;
 import org.bk.graphql.service.book.BookCommands.CreateOrUpdateBookCommand;
@@ -16,7 +16,6 @@ import org.bk.graphql.service.book.BookCommands.UpdateBookCommand;
 import org.bk.graphql.service.book.BookCommands.UpdateBookNameCommand;
 import org.bk.graphql.service.book.BookQueries;
 import org.bk.graphql.service.book.BookServiceImpl;
-import org.bk.graphql.service.bookauthorlink.BookAuthorLinkService;
 import org.bk.graphql.service.exception.DomainException;
 import org.bk.graphql.util.Uuids;
 import org.junit.jupiter.api.Test;
@@ -34,7 +33,6 @@ import org.springframework.data.domain.Sort;
 
 import java.time.Clock;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -47,6 +45,7 @@ import static org.bk.graphql.TimeTestData.DEFAULT_CREATED_DATE;
 import static org.bk.graphql.TimeTestData.DEFAULT_UPDATED_DATE;
 import static org.bk.graphql.TimeTestData.FIXED_CLOCK;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -66,7 +65,7 @@ class BookServiceTest {
     private AuthorService authorService;
 
     @Mock
-    private BookAuthorLinkService bookAuthorLinkService;
+    private BookAuthorLinkRepository bookAuthorLinkRepository;
 
     @Spy
     private Clock clock = TimeTestData.FIXED_CLOCK;
@@ -136,6 +135,10 @@ class BookServiceTest {
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(512);
             softly.assertThat(savedBookEntity.version()).isEqualTo(2);
         })));
+        verify(bookAuthorLinkRepository).upsertAll(assertArg(list ->
+                assertSoftly(softly -> {
+                    softly.assertThat(list).hasSize(1);
+                })));
     }
 
     @Test
@@ -282,31 +285,6 @@ class BookServiceTest {
                         book -> assertBook(book, firstBookId, "1984", 328, 1, firstAuthorId),
                         book -> assertBook(book, secondBookId, "Brave New World", 268, 1, secondAuthorId)
                 );
-    }
-
-    @Test
-    void test_getAuthorsForBooks_withBookIds_returnsAuthorsByBook() {
-        UUID firstBookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
-        UUID secondBookId = UUID.fromString("c22ee984-7f74-4158-8bd5-79235b0ad051");
-        AuthorId firstAuthorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
-        AuthorId secondAuthorId = AuthorId.parse("12c2d97c-4654-4398-bc0e-c40cf96715c6");
-        Author firstAuthor = Author.create(firstAuthorId, "George Orwell", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1);
-        Author secondAuthor = Author.create(secondAuthorId, "Aldous Huxley", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1);
-        when(bookRepository.findAllById(List.of(firstBookId, secondBookId)))
-                .thenReturn(List.of(
-                        bookEntity(firstBookId, "1984", 328, 1, firstAuthorId),
-                        bookEntity(secondBookId, "Brave New World", 268, 1, secondAuthorId)
-                ));
-        when(authorService.getAuthors(ArgumentMatchers.<ByIds<AuthorId>>any()))
-                .thenReturn(List.of(firstAuthor, secondAuthor));
-
-        Map<BookId, List<Author>> authorsByBook = bookService.getAuthorsForBooks(new ByIds<>(List.of(BookId.of(firstBookId), BookId.of(secondBookId))));
-
-        assertThat(authorsByBook)
-                .containsEntry(BookId.of(firstBookId), List.of(firstAuthor))
-                .containsEntry(BookId.of(secondBookId), List.of(secondAuthor));
-        verify(authorService).getAuthors(ArgumentMatchers.<ByIds<AuthorId>>assertArg(query -> assertThat(query.ids())
-                .containsExactly(firstAuthorId, secondAuthorId)));
     }
 
     private static BookEntity bookEntity(UUID id, String name, int pageCount, int version, AuthorId authorId) {

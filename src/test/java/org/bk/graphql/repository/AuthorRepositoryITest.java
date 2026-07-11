@@ -34,12 +34,11 @@ class AuthorRepositoryITest {
         AuthorEntity author = AuthorEntity.fromModel(AuthorTestData.sampleAuthor_1());
         authorRepository.save(author);
         assertThat(authorRepository.findById(author.id()))
-                .hasValue(author);
-        assertThat(authorRepository.save(new AuthorEntity(author.id(), "firstUpdated last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1)))
-                .isEqualTo(new AuthorEntity(author.id(), "firstUpdated last", author.createdAt(), DEFAULT_UPDATED_DATE, 2));
-
+                .hasValue(new AuthorEntity(author.id(), author.name(), author.createdAt(), author.updatedAt(), 1));
+        AuthorEntity updatedAuthor = new AuthorEntity(author.id(), "firstUpdated last", author.createdAt(), author.updatedAt(), 1);
+        authorRepository.save(updatedAuthor);
         assertThat(authorRepository.findById(author.id()))
-                .hasValue(new AuthorEntity(author.id(), "firstUpdated last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 2));
+                .hasValue(new AuthorEntity(author.id(), "firstUpdated last", updatedAuthor.createdAt(), updatedAuthor.updatedAt(), 2));
         Page<AuthorEntity> page = authorRepository.findAll(Pageable.ofSize(5));
         assertThat(page.getTotalElements()).isEqualTo(1);
     }
