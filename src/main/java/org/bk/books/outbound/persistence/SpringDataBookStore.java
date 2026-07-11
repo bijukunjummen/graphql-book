@@ -1,9 +1,9 @@
 package org.bk.books.outbound.persistence;
 
 import org.bk.books.application.port.out.BookStore;
-import org.bk.books.domain.Book;
-import org.bk.books.domain.BookId;
-import org.bk.books.domain.ImmutableBook;
+import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookId;
+import org.bk.books.domain.entity.book.ImmutableBook;
 import org.bk.books.entity.BookEntity;
 import org.bk.books.repository.book.BookRepository;
 import org.springframework.data.domain.Page;

@@ -1,7 +1,7 @@
 package org.bk.books.domain.event;
 
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.BookId;
 
 import java.util.List;
 

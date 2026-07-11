@@ -5,12 +5,12 @@ import org.bk.books.application.port.out.BookAuthorLinkStore;
 import org.bk.books.application.port.out.BookStore;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.Book;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookId;
+import org.bk.books.domain.entity.book.ImmutableBook;
 import org.bk.books.domain.event.BookAuthorsChangedEvent;
 import org.bk.books.domain.event.BookCreatedEvent;
-import org.bk.books.domain.ImmutableBook;
 import org.bk.books.service.book.BookCommands.CreateBookCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
 import org.bk.books.service.book.BookCommands.UpdateBookCommand;
@@ -19,7 +19,6 @@ import org.bk.books.service.book.BookQueries;
 import org.bk.books.service.book.BookServiceImpl;
 import org.bk.books.service.exception.DomainException;
 import org.bk.books.util.Uuids;
-import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -27,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -37,7 +37,6 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,7 +80,7 @@ class BookServiceTest {
         when(bookStore.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Book createdBook = bookService.createBook(new CreateBookCommand("book1", 100, Set.of(authorId)));
+        Book createdBook = bookService.createBook(new CreateBookCommand("book1", 100, List.of(authorId)));
 
         assertSoftly(softly -> {
             softly.assertThat(createdBook.id()).isEqualTo(BOOK_ID_1);
@@ -97,7 +96,7 @@ class BookServiceTest {
             softly.assertThat(savedBook.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
             softly.assertThat(savedBook.version()).isZero();
         })));
-        verify(bookAuthorLinkStore).replaceAuthorsForBook(BookId.of(BOOK_ID), Set.of(authorId), FIXED_CLOCK.instant());
+        verify(bookAuthorLinkStore).replaceAuthorsForBook(BookId.of(BOOK_ID), List.of(authorId), FIXED_CLOCK.instant());
         verify(eventPublisher).publishEvent(new BookCreatedEvent(BookId.of(BOOK_ID), List.of(authorId)));
     }
 
@@ -110,7 +109,7 @@ class BookServiceTest {
                 .thenReturn(Optional.empty());
         when(bookStore.save(any(Book.class))).thenReturn(savedBook);
 
-        Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Good Omens", 490, Set.of(authorId)));
+        Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Good Omens", 490, List.of(authorId)));
 
         assertBook(book, bookId, "Good Omens", 490, 0, authorId);
         verify(bookStore).save(assertArg(savedBookEntity -> assertSoftly(softly -> {
@@ -132,7 +131,7 @@ class BookServiceTest {
                 .thenReturn(Optional.of(existingBook));
         when(bookStore.save(any(Book.class))).thenReturn(savedBook);
 
-        Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Good Omens Updated", 512, Set.of(authorId), 2));
+        Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Good Omens Updated", 512, List.of(authorId), 2));
 
         assertBook(book, bookId, "Good Omens Updated", 512, 2, authorId);
         verify(bookStore).save(assertArg(savedBookEntity -> assertSoftly(softly -> {
@@ -141,7 +140,7 @@ class BookServiceTest {
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(512);
             softly.assertThat(savedBookEntity.version()).isEqualTo(2);
         })));
-        verify(bookAuthorLinkStore).replaceAuthorsForBook(bookId, Set.of(authorId), FIXED_CLOCK.instant());
+        verify(bookAuthorLinkStore).replaceAuthorsForBook(bookId, List.of(authorId), FIXED_CLOCK.instant());
         verify(eventPublisher).publishEvent(new BookAuthorsChangedEvent(bookId, List.of(authorId)));
     }
 
@@ -154,7 +153,7 @@ class BookServiceTest {
         when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(bookId)))
                 .thenReturn(Map.of(bookId, List.of(authorId)));
 
-        Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Ignored", 111, Set.of(authorId)));
+        Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Ignored", 111, List.of(authorId)));
 
         assertBook(book, bookId, "Good Omens", 490, 1, authorId);
         verify(bookStore, never()).save(any(Book.class));

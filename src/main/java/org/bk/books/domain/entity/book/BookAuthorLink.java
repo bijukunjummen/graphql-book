@@ -1,5 +1,6 @@
-package org.bk.books.domain;
+package org.bk.books.domain.entity.book;
 
+import org.bk.books.domain.entity.author.AuthorId;
 import org.immutables.value.Value;
 
 import java.time.Instant;

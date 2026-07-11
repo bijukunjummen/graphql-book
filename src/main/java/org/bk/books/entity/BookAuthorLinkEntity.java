@@ -1,10 +1,10 @@
 package org.bk.books.entity;
 
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.BookAuthorLink;
-import org.bk.books.domain.BookAuthorLinkId;
-import org.bk.books.domain.BookId;
-import org.bk.books.domain.ImmutableBookAuthorLink;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.BookAuthorLink;
+import org.bk.books.domain.entity.book.BookAuthorLinkId;
+import org.bk.books.domain.entity.book.BookId;
+import org.bk.books.domain.entity.book.ImmutableBookAuthorLink;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 

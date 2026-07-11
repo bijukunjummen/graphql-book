@@ -1,8 +1,8 @@
 package org.bk.books.web;
 
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.Book;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.service.author.AuthorService;
 import org.bk.books.service.author.AuthorServiceCommands.CreateOrUpdateAuthorCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
@@ -21,6 +21,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
 import java.util.Set;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -69,7 +70,7 @@ class BookControllerTest {
                         BookId.parse("2f5ac49b-af88-4e72-a549-5f86aff4e549"),
                         "Good Omens",
                         490,
-                        Set.of(a12.id(), a13.id())
+                        List.of(a12.id(), a13.id())
                 )
         );
 
@@ -156,7 +157,7 @@ class BookControllerTest {
                         BookId.parse("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35"),
                         "A Wizard of Earthsea",
                         205,
-                        Set.of(author.id())
+                        List.of(author.id())
                 )
         );
 

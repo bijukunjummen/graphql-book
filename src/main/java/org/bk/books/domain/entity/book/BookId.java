@@ -1,4 +1,4 @@
-package org.bk.books.domain;
+package org.bk.books.domain.entity.book;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

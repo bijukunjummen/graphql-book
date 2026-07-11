@@ -3,10 +3,10 @@ package org.bk.books.web;
 import org.bk.books.application.BookAuthorManagementService;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
-import org.bk.books.domain.Author;
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.Book;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.service.book.BookCommands.CreateBookCommand;
 import org.bk.books.service.book.BookCommands.UpdateBookNameCommand;
 import org.bk.books.service.book.BookService;
@@ -62,7 +62,7 @@ public class BookController {
                 new CreateBookCommand(
                         input.name(),
                         input.pageCount(),
-                        input.authors().stream().map(AuthorId::parse).collect(Collectors.toSet())
+                        input.authors().stream().map(AuthorId::parse).toList()
                 )
         );
         return new CreateBookPayload(BookDto.map(createdBook));

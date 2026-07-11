@@ -1,6 +1,6 @@
 package org.bk.books.web.dto;
 
-import org.bk.books.domain.Book;
+import org.bk.books.domain.entity.book.Book;
 
 
 public record BookDto(String id, String name, int pageCount, int version) {

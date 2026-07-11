@@ -1,6 +1,6 @@
 package org.bk.books.service.author;
 
-import org.bk.books.domain.AuthorId;
+import org.bk.books.domain.entity.author.AuthorId;
 
 public interface AuthorServiceCommands {
     record CreateAuthorCommand(String name) {

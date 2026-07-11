@@ -2,11 +2,11 @@ package org.bk.books.application;
 
 import org.bk.books.TimeTestData;
 import org.bk.books.common.query.ByIds;
-import org.bk.books.domain.Author;
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.service.author.AuthorService;
-import org.bk.books.service.bookauthorlink.BookAuthorLinkService;
+import org.bk.books.service.book.BookService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -30,7 +30,7 @@ class BookAuthorManagementServiceTest {
     private BookAuthorManagementServiceImpl bookAuthorManagementService;
 
     @Mock
-    private BookAuthorLinkService bookAuthorLinkService;
+    private BookService bookService;
 
     @Mock
     private AuthorService authorService;
@@ -41,7 +41,7 @@ class BookAuthorManagementServiceTest {
         BookId secondBookId = BookId.parse("c22ee984-7f74-4158-8bd5-79235b0ad051");
         ByIds<BookId> query = new ByIds<>(List.of(firstBookId, secondBookId));
 
-        when(bookAuthorLinkService.getAuthorIdsForBooks(query)).thenReturn(Map.of());
+        when(bookService.getAuthorIdsForBooks(query)).thenReturn(Map.of());
 
         Map<BookId, List<Author>> result = bookAuthorManagementService.getAuthorsForBooks(query);
 
@@ -64,7 +64,7 @@ class BookAuthorManagementServiceTest {
         Author secondAuthor = Author.create(secondAuthorId, "Aldous Huxley",
                 TimeTestData.DEFAULT_CREATED_DATE, TimeTestData.DEFAULT_UPDATED_DATE, 1);
 
-        when(bookAuthorLinkService.getAuthorIdsForBooks(query)).thenReturn(Map.of(
+        when(bookService.getAuthorIdsForBooks(query)).thenReturn(Map.of(
                 firstBookId, List.of(firstAuthorId),
                 secondBookId, List.of(secondAuthorId)
         ));
@@ -90,7 +90,7 @@ class BookAuthorManagementServiceTest {
         Author knownAuthor = Author.create(knownAuthorId, "George Orwell",
                 TimeTestData.DEFAULT_CREATED_DATE, TimeTestData.DEFAULT_UPDATED_DATE, 1);
 
-        when(bookAuthorLinkService.getAuthorIdsForBooks(query)).thenReturn(Map.of(
+        when(bookService.getAuthorIdsForBooks(query)).thenReturn(Map.of(
                 bookId, List.of(knownAuthorId, missingAuthorId)
         ));
         when(authorService.getAuthors(ArgumentMatchers.<ByIds<AuthorId>>any()))

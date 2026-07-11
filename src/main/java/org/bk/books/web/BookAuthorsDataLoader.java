@@ -2,8 +2,8 @@ package org.bk.books.web;
 
 import org.bk.books.application.BookAuthorManagementService;
 import org.bk.books.common.query.ByIds;
-import org.bk.books.domain.Author;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.web.dto.AuthorDto;
 import org.dataloader.BatchLoaderEnvironment;
 import reactor.core.publisher.Mono;

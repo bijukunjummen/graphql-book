@@ -4,10 +4,10 @@ import org.bk.books.application.port.out.BookAuthorLinkStore;
 import org.bk.books.application.port.out.BookStore;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.Book;
-import org.bk.books.domain.BookId;
-import org.bk.books.domain.ImmutableBook;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookId;
+import org.bk.books.domain.entity.book.ImmutableBook;
 import org.bk.books.domain.event.BookAuthorsChangedEvent;
 import org.bk.books.domain.event.BookCreatedEvent;
 import org.bk.books.domain.validation.BookName;
@@ -28,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -163,6 +163,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public Book updateBookAuthors(BookCommands.UpdateBookAuthorsCommand command) {
+        Book book = bookStore.findById(command.id()).orElseThrow();
+         bookAuthorLinkStore.replaceAuthorsForBook(command.id(), command.authorIds(), clock.instant());
+         return enrichWithAuthors(book);
+    }
+
+    @Override
     public Page<Book> getBooks(GetBooksQuery query) {
         return bookStore.findAll(Pageable.ofSize(query.size()).withPage(query.page()))
                 .map(this::enrichWithAuthors);
@@ -185,9 +192,14 @@ public class BookServiceImpl implements BookService {
         return bookStore.findAllByIds(query.ids()).stream().map(this::enrichWithAuthors).toList();
     }
 
+    @Override
+    public Map<BookId, List<AuthorId>> getAuthorIdsForBooks(ByIds<BookId> query) {
+        return bookAuthorLinkStore.findAuthorIdsByBookIds(query.ids());
+    }
+
     private Book persistBookWithAuthors(Book book, List<AuthorId> authorIds, Instant now) {
         Book savedBook = bookStore.save(book);
-        bookAuthorLinkStore.replaceAuthorsForBook(savedBook.id(), authorIds.stream().collect(Collectors.toSet()), now);
+        bookAuthorLinkStore.replaceAuthorsForBook(savedBook.id(), authorIds, now);
         return ImmutableBook.builder()
                 .from(savedBook)
                 .authors(authorIds)

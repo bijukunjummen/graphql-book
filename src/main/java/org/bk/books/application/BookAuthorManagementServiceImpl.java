@@ -1,11 +1,11 @@
 package org.bk.books.application;
 
 import org.bk.books.common.query.ByIds;
-import org.bk.books.domain.Author;
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.service.author.AuthorService;
-import org.bk.books.service.bookauthorlink.BookAuthorLinkService;
+import org.bk.books.service.book.BookService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,17 +15,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class BookAuthorManagementServiceImpl implements BookAuthorManagementService {
-    private final BookAuthorLinkService bookAuthorLinkService;
+    private final BookService bookService;
     private final AuthorService authorService;
 
-    public BookAuthorManagementServiceImpl(BookAuthorLinkService bookAuthorLinkService, AuthorService authorService) {
-        this.bookAuthorLinkService = bookAuthorLinkService;
+    public BookAuthorManagementServiceImpl(BookService bookService, AuthorService authorService) {
+        this.bookService = bookService;
         this.authorService = authorService;
     }
 
     @Override
     public Map<BookId, List<Author>> getAuthorsForBooks(ByIds<BookId> ids) {
-        Map<BookId, List<AuthorId>> authorIdsForBooks = bookAuthorLinkService.getAuthorIdsForBooks(ids);
+        Map<BookId, List<AuthorId>> authorIdsForBooks = bookService.getAuthorIdsForBooks(ids);
         List<AuthorId> authorIds = authorIdsForBooks.values().stream()
                 .flatMap(List::stream)
                 .distinct()

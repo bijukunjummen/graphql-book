@@ -1,8 +1,8 @@
 package org.bk.books.outbound.persistence;
 
 import org.bk.books.application.port.out.AuthorStore;
-import org.bk.books.domain.Author;
-import org.bk.books.domain.AuthorId;
+import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.entity.AuthorEntity;
 import org.bk.books.repository.author.AuthorRepository;
 import org.springframework.data.domain.Page;

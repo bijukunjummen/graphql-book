@@ -1,8 +1,8 @@
 package org.bk.books;
 
-import org.bk.books.domain.Book;
-import org.bk.books.domain.BookId;
-import org.bk.books.domain.ImmutableBook;
+import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookId;
+import org.bk.books.domain.entity.book.ImmutableBook;
 
 import java.util.UUID;
 

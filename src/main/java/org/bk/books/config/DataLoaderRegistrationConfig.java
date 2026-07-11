@@ -1,6 +1,6 @@
 package org.bk.books.config;
 
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.web.BookAuthorsDataLoader;
 import org.bk.books.web.BookAuthorsDataLoader.AuthorsWrapper;
 import org.springframework.context.annotation.Configuration;

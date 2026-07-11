@@ -1,8 +1,8 @@
 package org.bk.books.web;
 
 import org.bk.books.common.query.ById;
-import org.bk.books.domain.Author;
-import org.bk.books.domain.AuthorId;
+import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.service.author.AuthorService;
 import org.bk.books.service.author.AuthorServiceCommands.CreateAuthorCommand;
 import org.bk.books.service.author.AuthorServiceCommands.UpdateAuthorNameCommand;

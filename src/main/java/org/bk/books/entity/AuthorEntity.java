@@ -1,8 +1,8 @@
 package org.bk.books.entity;
 
-import org.bk.books.domain.Author;
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.ImmutableAuthor;
+import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.author.ImmutableAuthor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;

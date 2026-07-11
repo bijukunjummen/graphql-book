@@ -1,8 +1,8 @@
 package org.bk.books.outbound.persistence;
 
 import org.bk.books.application.port.out.BookAuthorLinkStore;
-import org.bk.books.domain.AuthorId;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.author.AuthorId;
+import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.entity.BookAuthorLinkEntity;
 import org.bk.books.repository.bookauthorlink.BookAuthorLinkRepository;
 import org.bk.books.util.Uuids;
@@ -28,17 +28,14 @@ public class SpringDataBookAuthorLinkStore implements BookAuthorLinkStore {
     }
 
     @Override
-    public void replaceAuthorsForBook(BookId bookId, Set<AuthorId> authorIds, Instant now) {
-        if (authorIds.isEmpty()) {
-            bookAuthorLinkRepository.deleteByBookId(bookId.id());
+    public void replaceAuthorsForBook(BookId bookId, List<AuthorId> authorIds, Instant now) {
+        bookAuthorLinkRepository.deleteByBookId(bookId.id());
+        if(authorIds.isEmpty()) {
             return;
         }
 
-        Set<UUID> authorIdsAsUuids = authorIds.stream().map(AuthorId::id).collect(Collectors.toSet());
-        bookAuthorLinkRepository.deleteByBookIdAndAuthorIdNotIn(bookId.id(), authorIdsAsUuids);
-
-        List<BookAuthorLinkEntity> links = authorIdsAsUuids.stream()
-                .map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid(), bookId.id(), authorId, now, now))
+        List<BookAuthorLinkEntity> links = authorIds.stream()
+                .map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid(), bookId.id(), authorId.id(), now, now))
                 .toList();
         bookAuthorLinkRepository.upsertAll(links);
     }

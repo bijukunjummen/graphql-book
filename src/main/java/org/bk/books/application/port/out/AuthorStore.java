@@ -1,7 +1,7 @@
 package org.bk.books.application.port.out;
 
-import org.bk.books.domain.Author;
-import org.bk.books.domain.AuthorId;
+import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.author.AuthorId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

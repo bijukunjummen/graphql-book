@@ -1,7 +1,7 @@
 package org.bk.books.entity;
 
-import org.bk.books.domain.Book;
-import org.bk.books.domain.BookId;
+import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
