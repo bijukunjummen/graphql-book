@@ -1,6 +1,8 @@
 package org.bk.books.web;
 
+import org.bk.books.domain.AuthorId;
 import org.bk.books.domain.Book;
+import org.bk.books.domain.BookId;
 import org.bk.books.service.author.AuthorService;
 import org.bk.books.service.author.CreateOrUpdateAuthorCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
@@ -51,21 +53,21 @@ class BookControllerTest {
     void test_findBookById_withExistingBook_returnsBook() {
         var a12 = authorService.createOrUpdateAuthor(
                 new CreateOrUpdateAuthorCommand(
-                        UUID.fromString("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d"),
+                        AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d"),
                         "Terry Pratchett"
                 )
         );
 
         var a13 = authorService.createOrUpdateAuthor(
                 new CreateOrUpdateAuthorCommand(
-                        UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d"),
+                        AuthorId.parse("38469694-b350-4f1a-89be-1c8fd9aeaf2d"),
                         "Neil Gaiman"
                 )
         );
 
         bookService.createOrUpdateBook(
                 new CreateOrUpdateBookCommand(
-                        UUID.fromString("2f5ac49b-af88-4e72-a549-5f86aff4e549"),
+                        BookId.parse("2f5ac49b-af88-4e72-a549-5f86aff4e549"),
                         "Good Omens",
                         490,
                         Set.of(a12.id(), a13.id())
@@ -79,6 +81,10 @@ class BookControllerTest {
                     name
                     pageCount
                     version
+                    authors {
+                      id
+                      name
+                    }        
                 }
             }
             """;
@@ -141,14 +147,14 @@ class BookControllerTest {
     void test_updateBookName_withExistingBook_returnsRenamedBook() {
         var author = authorService.createOrUpdateAuthor(
                 new CreateOrUpdateAuthorCommand(
-                        UUID.fromString("f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e"),
+                        AuthorId.parse("f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e"),
                         "Ursula K. Le Guin"
                 )
         );
 
         Book book = bookService.createOrUpdateBook(
                 new CreateOrUpdateBookCommand(
-                        UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35"),
+                        BookId.parse("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35"),
                         "A Wizard of Earthsea",
                         205,
                         Set.of(author.id())

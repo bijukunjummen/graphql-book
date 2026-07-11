@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Controller
@@ -70,7 +71,7 @@ public class BookController {
     @MutationMapping
     public UpdateBookNamePayload updateBookName(@Argument UpdateBookNameInput input) {
         Book updatedBook = bookService.updateBookName(
-                new UpdateBookNameCommand(input.id(), input.name(), input.version())
+                new UpdateBookNameCommand(BookId.parse(input.id()), input.name(), input.version())
         );
         return new UpdateBookNamePayload(BookDto.map(updatedBook));
     }
@@ -87,7 +88,7 @@ public class BookController {
         Map<BookId, List<Author>> authorsForBooks = bookAuthorManagementService.getAuthorsForBooks(new ByIds<>(bookIds));
         return books.stream()
                 .collect(Collectors.toMap(
-                        book -> book,
+                        Function.identity(),
                         book -> {
                             List<Author> authors = authorsForBooks.get(BookId.parse(book.id()));
                             return authors != null ? authors.stream().map(AuthorDto::map).toList() : List.of();

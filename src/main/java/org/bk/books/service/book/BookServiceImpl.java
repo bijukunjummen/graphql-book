@@ -77,7 +77,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book createOrUpdateBook(CreateOrUpdateBookCommand command) {
-        Optional<Book> book = bookStore.findById(BookId.of(command.id()));
+        Optional<Book> book = bookStore.findById(command.id());
 
         Instant now = clock.instant();
         return book.map(existingBook -> {
@@ -102,7 +102,7 @@ public class BookServiceImpl implements BookService {
             return saved;
         }).orElseGet(() -> {
             Book newBook = Book.create(
-                    BookId.of(command.id()),
+                    command.id(),
                     BookName.of(command.name()).value(),
                     List.of(),
                     PageCount.of(command.pageCount()).value(),
@@ -123,7 +123,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book updateBook(UpdateBookCommand command) {
-        Book book = bookStore.findById(BookId.of(command.id()))
+        Book book = bookStore.findById(command.id())
                 .orElseThrow(() -> new DomainException("Book not found"));
         Instant now = clock.instant();
         Book updatedBook = Book.create(
@@ -147,7 +147,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book updateBookName(UpdateBookNameCommand command) {
-        Book book = bookStore.findById(BookId.of(command.id()))
+        Book book = bookStore.findById(command.id())
                 .orElseThrow(() -> new DomainException("Book not found"));
         Book updatedBook = Book.create(
                 book.id(),

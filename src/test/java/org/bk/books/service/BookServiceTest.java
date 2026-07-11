@@ -103,10 +103,10 @@ class BookServiceTest {
 
     @Test
     void test_createOrUpdateBook_whenBookMissing_savesNewBookAndReturnsBook() {
-        UUID bookId = UUID.fromString("2f5ac49b-af88-4e72-a549-5f86aff4e549");
+        BookId bookId = BookId.parse("2f5ac49b-af88-4e72-a549-5f86aff4e549");
         AuthorId authorId = AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d");
         Book savedBook = book(bookId, "Good Omens", 490, 0, List.of());
-        when(bookStore.findById(BookId.of(bookId)))
+        when(bookStore.findById(bookId))
                 .thenReturn(Optional.empty());
         when(bookStore.save(any(Book.class))).thenReturn(savedBook);
 
@@ -114,21 +114,21 @@ class BookServiceTest {
 
         assertBook(book, bookId, "Good Omens", 490, 0, authorId);
         verify(bookStore).save(assertArg(savedBookEntity -> assertSoftly(softly -> {
-            softly.assertThat(savedBookEntity.id()).isEqualTo(BookId.of(bookId));
+            softly.assertThat(savedBookEntity.id()).isEqualTo(bookId);
             softly.assertThat(savedBookEntity.name()).isEqualTo("Good Omens");
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(490);
             softly.assertThat(savedBookEntity.version()).isZero();
         })));
-        verify(eventPublisher).publishEvent(new BookCreatedEvent(BookId.of(bookId), List.of(authorId)));
+        verify(eventPublisher).publishEvent(new BookCreatedEvent(bookId, List.of(authorId)));
     }
 
     @Test
     void test_createOrUpdateBook_whenBookExistsAndVersionPresent_savesUpdatedBookAndReturnsBook() {
-        UUID bookId = UUID.fromString("2f5ac49b-af88-4e72-a549-5f86aff4e549");
+        BookId bookId = BookId.parse("2f5ac49b-af88-4e72-a549-5f86aff4e549");
         AuthorId authorId = AuthorId.parse("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
         Book existingBook = book(bookId, "Good Omens", 490, 1, List.of());
         Book savedBook = book(bookId, "Good Omens Updated", 512, 2, List.of());
-        when(bookStore.findById(BookId.of(bookId)))
+        when(bookStore.findById(bookId))
                 .thenReturn(Optional.of(existingBook));
         when(bookStore.save(any(Book.class))).thenReturn(savedBook);
 
@@ -136,21 +136,23 @@ class BookServiceTest {
 
         assertBook(book, bookId, "Good Omens Updated", 512, 2, authorId);
         verify(bookStore).save(assertArg(savedBookEntity -> assertSoftly(softly -> {
-            softly.assertThat(savedBookEntity.id()).isEqualTo(BookId.of(bookId));
+            softly.assertThat(savedBookEntity.id()).isEqualTo(bookId);
             softly.assertThat(savedBookEntity.name()).isEqualTo("Good Omens Updated");
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(512);
             softly.assertThat(savedBookEntity.version()).isEqualTo(2);
         })));
-        verify(bookAuthorLinkStore).replaceAuthorsForBook(BookId.of(bookId), Set.of(authorId), FIXED_CLOCK.instant());
-        verify(eventPublisher).publishEvent(new BookAuthorsChangedEvent(BookId.of(bookId), List.of(authorId)));
+        verify(bookAuthorLinkStore).replaceAuthorsForBook(bookId, Set.of(authorId), FIXED_CLOCK.instant());
+        verify(eventPublisher).publishEvent(new BookAuthorsChangedEvent(bookId, List.of(authorId)));
     }
 
     @Test
     void test_createOrUpdateBook_whenBookExistsAndCommandVersionIsZero_doesNotSaveAndReturnsExistingBook() {
-        UUID bookId = UUID.fromString("2f5ac49b-af88-4e72-a549-5f86aff4e549");
+        BookId bookId = BookId.parse("2f5ac49b-af88-4e72-a549-5f86aff4e549");
         AuthorId authorId = AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d");
         Book existingBook = book(bookId, "Good Omens", 490, 1, List.of(authorId));
-        when(bookStore.findById(BookId.of(bookId))).thenReturn(Optional.of(existingBook));
+        when(bookStore.findById(bookId)).thenReturn(Optional.of(existingBook));
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(bookId)))
+                .thenReturn(Map.of(bookId, List.of(authorId)));
 
         Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(bookId, "Ignored", 111, Set.of(authorId)));
 
@@ -160,29 +162,29 @@ class BookServiceTest {
 
     @Test
     void test_updateBook_whenBookExists_savesEditableFieldsAndReturnsBook() {
-        UUID bookId = UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
+        BookId bookId = BookId.parse("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
         AuthorId authorId = AuthorId.parse("f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e");
         Book existingBook = book(bookId, "A Wizard of Earthsea", 205, 1, List.of());
         Book savedBook = book(bookId, "The Tombs of Atuan", 180, 2, List.of());
-        when(bookStore.findById(BookId.of(bookId))).thenReturn(Optional.of(existingBook));
+        when(bookStore.findById(bookId)).thenReturn(Optional.of(existingBook));
         when(bookStore.save(any(Book.class))).thenReturn(savedBook);
 
         Book book = bookService.updateBook(new UpdateBookCommand(bookId, "The Tombs of Atuan", 180, Set.of(authorId), 2));
 
         assertBook(book, bookId, "The Tombs of Atuan", 180, 2, authorId);
         verify(bookStore).save(assertArg(savedBookEntity -> assertSoftly(softly -> {
-            softly.assertThat(savedBookEntity.id()).isEqualTo(BookId.of(bookId));
+            softly.assertThat(savedBookEntity.id()).isEqualTo(bookId);
             softly.assertThat(savedBookEntity.name()).isEqualTo("The Tombs of Atuan");
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(180);
             softly.assertThat(savedBookEntity.version()).isEqualTo(2);
         })));
-        verify(eventPublisher).publishEvent(new BookAuthorsChangedEvent(BookId.of(bookId), List.of(authorId)));
+        verify(eventPublisher).publishEvent(new BookAuthorsChangedEvent(bookId, List.of(authorId)));
     }
 
     @Test
     void test_updateBook_whenBookMissing_throwsDomainException() {
-        UUID bookId = UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
-        when(bookStore.findById(BookId.of(bookId))).thenReturn(Optional.empty());
+        BookId bookId = BookId.parse("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
+        when(bookStore.findById(bookId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> bookService.updateBook(new UpdateBookCommand(bookId, "The Tombs of Atuan", 180, Set.of(), 2)))
                 .isInstanceOf(DomainException.class)
@@ -193,21 +195,21 @@ class BookServiceTest {
 
     @Test
     void test_updateBookName_whenBookExists_savesNameAndVersionOnly() {
-        UUID bookId = UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
+        BookId bookId = BookId.parse("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
         AuthorId authorId = AuthorId.parse("f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e");
         Book existingBook = book(bookId, "A Wizard of Earthsea", 205, 1, List.of());
         Book savedBook = book(bookId, "The Tombs of Atuan", 205, 2, List.of());
-        when(bookStore.findById(BookId.of(bookId))).thenReturn(Optional.of(existingBook));
+        when(bookStore.findById(bookId)).thenReturn(Optional.of(existingBook));
         when(bookStore.save(any(Book.class))).thenReturn(savedBook);
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(BookId.of(bookId)))).thenReturn(Map.of(
-                BookId.of(bookId), List.of(authorId)
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(bookId))).thenReturn(Map.of(
+                bookId, List.of(authorId)
         ));
 
         Book book = bookService.updateBookName(new UpdateBookNameCommand(bookId, "The Tombs of Atuan", 2));
 
         assertBook(book, bookId, "The Tombs of Atuan", 205, 2, authorId);
         verify(bookStore).save(assertArg(savedBookEntity -> assertSoftly(softly -> {
-            softly.assertThat(savedBookEntity.id()).isEqualTo(BookId.of(bookId));
+            softly.assertThat(savedBookEntity.id()).isEqualTo(bookId);
             softly.assertThat(savedBookEntity.name()).isEqualTo("The Tombs of Atuan");
             softly.assertThat(savedBookEntity.pageCount()).isEqualTo(205);
             softly.assertThat(savedBookEntity.version()).isEqualTo(2);
@@ -216,8 +218,8 @@ class BookServiceTest {
 
     @Test
     void test_updateBookName_whenBookMissing_throwsDomainException() {
-        UUID bookId = UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
-        when(bookStore.findById(BookId.of(bookId))).thenReturn(Optional.empty());
+        BookId bookId = BookId.parse("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
+        when(bookStore.findById(bookId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> bookService.updateBookName(new UpdateBookNameCommand(bookId, "The Tombs of Atuan", 2)))
                 .isInstanceOf(DomainException.class)
@@ -228,12 +230,12 @@ class BookServiceTest {
 
     @Test
     void test_getBooks_withQuery_returnsMappedPageUsingRequestedPage() {
-        UUID bookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
+        BookId bookId = BookId.parse("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
         AuthorId authorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         when(bookStore.findAll(any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(book(bookId, "1984", 328, 1, List.of()))));
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(BookId.of(bookId)))).thenReturn(Map.of(
-                BookId.of(bookId), List.of(authorId)
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(bookId))).thenReturn(Map.of(
+                bookId, List.of(authorId)
         ));
 
         Page<Book> page = bookService.getBooks(new BookQueries.GetBooksQuery(2, 5));
@@ -250,13 +252,13 @@ class BookServiceTest {
 
     @Test
     void test_getBooks_withPageable_returnsMappedPage() {
-        UUID bookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
+        BookId bookId = BookId.parse("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
         AuthorId authorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         Pageable pageable = PageRequest.of(1, 3, Sort.by("name"));
         when(bookStore.findAll(pageable))
                 .thenReturn(new PageImpl<>(List.of(book(bookId, "1984", 328, 1, List.of())), pageable, 1));
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(BookId.of(bookId)))).thenReturn(Map.of(
-                BookId.of(bookId), List.of(authorId)
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(bookId))).thenReturn(Map.of(
+                bookId, List.of(authorId)
         ));
 
         Page<Book> page = bookService.getBooks(pageable);
@@ -269,14 +271,14 @@ class BookServiceTest {
 
     @Test
     void test_getBook_withExistingBookId_returnsBook() {
-        UUID bookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
+        BookId bookId = BookId.parse("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
         AuthorId authorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
-        when(bookStore.findById(BookId.of(bookId))).thenReturn(Optional.of(book(bookId, "1984", 328, 1, List.of())));
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(BookId.of(bookId)))).thenReturn(Map.of(
-                BookId.of(bookId), List.of(authorId)
+        when(bookStore.findById(bookId)).thenReturn(Optional.of(book(bookId, "1984", 328, 1, List.of())));
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(bookId))).thenReturn(Map.of(
+                bookId, List.of(authorId)
         ));
 
-        Optional<Book> book = bookService.getBook(new ById<>(BookId.of(bookId)));
+        Optional<Book> book = bookService.getBook(new ById<>(bookId));
 
         assertThat(book)
                 .hasValueSatisfying(foundBook -> assertBook(foundBook, bookId, "1984", 328, 1, authorId));
@@ -284,23 +286,23 @@ class BookServiceTest {
 
     @Test
     void test_getBooks_withBookIds_returnsBooks() {
-        UUID firstBookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
-        UUID secondBookId = UUID.fromString("c22ee984-7f74-4158-8bd5-79235b0ad051");
+        BookId firstBookId = BookId.parse("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
+        BookId secondBookId = BookId.parse("c22ee984-7f74-4158-8bd5-79235b0ad051");
         AuthorId firstAuthorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         AuthorId secondAuthorId = AuthorId.parse("12c2d97c-4654-4398-bc0e-c40cf96715c6");
-        when(bookStore.findAllByIds(List.of(BookId.of(firstBookId), BookId.of(secondBookId))))
+        when(bookStore.findAllByIds(List.of(firstBookId, secondBookId)))
                 .thenReturn(List.of(
                         book(firstBookId, "1984", 328, 1, List.of()),
                         book(secondBookId, "Brave New World", 268, 1, List.of())
                 ));
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(BookId.of(firstBookId)))).thenReturn(Map.of(
-                BookId.of(firstBookId), List.of(firstAuthorId)
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(firstBookId))).thenReturn(Map.of(
+                firstBookId, List.of(firstAuthorId)
         ));
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(BookId.of(secondBookId)))).thenReturn(Map.of(
-                BookId.of(secondBookId), List.of(secondAuthorId)
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(secondBookId))).thenReturn(Map.of(
+                secondBookId, List.of(secondAuthorId)
         ));
 
-        List<Book> books = bookService.getBooks(new ByIds<>(List.of(BookId.of(firstBookId), BookId.of(secondBookId))));
+        List<Book> books = bookService.getBooks(new ByIds<>(List.of(firstBookId, secondBookId)));
 
         assertThat(books)
                 .hasSize(2)
@@ -310,9 +312,9 @@ class BookServiceTest {
                 );
     }
 
-    private static Book book(UUID id, String name, int pageCount, int version, List<AuthorId> authors) {
+    private static Book book(BookId id, String name, int pageCount, int version, List<AuthorId> authors) {
         return ImmutableBook.builder()
-                .id(BookId.of(id))
+                .id(id)
                 .name(name)
                 .pageCount(pageCount)
                 .authors(authors)
@@ -322,9 +324,10 @@ class BookServiceTest {
                 .build();
     }
 
-    private static void assertBook(Book book, UUID id, String name, int pageCount, int version, AuthorId authorId) {
+    private static void assertBook(Book book, BookId id, String name, int pageCount, int version, AuthorId authorId) {
         assertSoftly(softly -> {
-            softly.assertThat(book.id()).isEqualTo(BookId.of(id));
+            softly.assertThat(book.id()).isEqualTo(id);
+            softly.assertThat(book.authors()).contains(authorId);
             softly.assertThat(book.name()).isEqualTo(name);
             softly.assertThat(book.pageCount()).isEqualTo(pageCount);
             softly.assertThat(book.version()).isEqualTo(version);

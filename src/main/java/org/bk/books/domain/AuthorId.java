@@ -1,8 +1,11 @@
 package org.bk.books.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import java.util.UUID;
 
 public record AuthorId(UUID id) {
+    @JsonCreator
     public static AuthorId parse(String id) {
         return new AuthorId(UUID.fromString(id));
     }

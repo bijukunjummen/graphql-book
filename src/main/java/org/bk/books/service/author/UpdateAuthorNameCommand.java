@@ -1,7 +1,7 @@
 package org.bk.books.service.author;
 
-import java.util.UUID;
+import org.bk.books.domain.AuthorId;
 
-public record UpdateAuthorNameCommand(UUID id, String name, int version) {
+public record UpdateAuthorNameCommand(AuthorId id, String name, int version) {
 }
 

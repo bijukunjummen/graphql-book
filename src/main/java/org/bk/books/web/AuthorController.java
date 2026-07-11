@@ -46,7 +46,7 @@ public class AuthorController {
     @MutationMapping
     public UpdateAuthorNamePayload updateAuthorName(@Argument UpdateAuthorNameInput input) {
         Author updatedAuthor = authorService.updateAuthorName(
-            new UpdateAuthorNameCommand(input.id(), input.name(), input.version())
+            new UpdateAuthorNameCommand(AuthorId.parse(input.id()), input.name(), input.version())
         );
         return new UpdateAuthorNamePayload(AuthorDto.map(updatedAuthor));
     }

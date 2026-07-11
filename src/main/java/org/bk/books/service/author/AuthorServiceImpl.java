@@ -1,12 +1,12 @@
 package org.bk.books.service.author;
 
 import org.bk.books.application.port.out.AuthorStore;
+import org.bk.books.common.query.ById;
+import org.bk.books.common.query.ByIds;
 import org.bk.books.domain.Author;
 import org.bk.books.domain.AuthorId;
 import org.bk.books.domain.event.AuthorRenamedEvent;
 import org.bk.books.domain.validation.AuthorName;
-import org.bk.books.common.query.ById;
-import org.bk.books.common.query.ByIds;
 import org.bk.books.service.exception.DomainException;
 import org.bk.books.util.Uuids;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,7 +51,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     @Transactional
     public Author createOrUpdateAuthor(CreateOrUpdateAuthorCommand command) {
-        Optional<Author> author = authorStore.findById(AuthorId.of(command.id()));
+        Optional<Author> author = authorStore.findById(command.id());
         Instant now = clock.instant();
 
         return author.map(existingAuthor -> {
@@ -68,7 +68,7 @@ public class AuthorServiceImpl implements AuthorService {
             return authorStore.save(updatedAuthor);
         }).orElseGet(() -> {
             Author newAuthor = Author.create(
-                    AuthorId.of(command.id()),
+                    command.id(),
                     AuthorName.of(command.name()).value(),
                     now,
                     now,
@@ -81,7 +81,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional
     @Override
     public Author updateAuthorName(UpdateAuthorNameCommand command) {
-        Author author = authorStore.findById(AuthorId.of(command.id()))
+        Author author = authorStore.findById(command.id())
                 .orElseThrow(() -> new DomainException("Author not found"));
         Instant now = clock.instant();
         Author updatedAuthor = Author.create(
