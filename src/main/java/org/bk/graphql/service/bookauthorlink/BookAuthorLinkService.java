@@ -7,6 +7,7 @@ import org.bk.graphql.domain.BookId;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface BookAuthorLinkService {
     Map<BookId, List<AuthorId>> getAuthorIdsForBooks(ByIds<BookId> query);
 }

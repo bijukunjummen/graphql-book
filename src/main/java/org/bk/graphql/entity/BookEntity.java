@@ -2,7 +2,6 @@ package org.bk.graphql.entity;
 
 import org.bk.graphql.domain.Book;
 import org.bk.graphql.domain.BookId;
-import org.bk.graphql.domain.ImmutableBook;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
@@ -25,15 +24,15 @@ public record BookEntity(
     }
 
     public Book toModel() {
-        return ImmutableBook.builder()
-                .id(BookId.of(id))
-                .name(name)
-                .pageCount(pageCount)
-                //Placeholder..will be filled in later.
-                .authors(List.of())
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .version(version)
-                .build();
+        return Book.create(
+                BookId.of(id),
+                name,
+                // Placeholder..filled in by application layer.
+                List.of(),
+                pageCount,
+                createdAt,
+                updatedAt,
+                version
+        );
     }
 }

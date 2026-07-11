@@ -2,6 +2,7 @@ package org.bk.graphql.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.bk.graphql.domain.validation.AuthorName;
 import org.immutables.value.Value;
 
 import java.time.Instant;
@@ -13,7 +14,7 @@ public interface Author {
     static Author create(AuthorId authorId, String name, Instant createdAt, Instant updatedAt, int version) {
         return ImmutableAuthor.builder()
                 .id(authorId)
-                .name(name)
+                .name(AuthorName.of(name).value())
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .version(version)

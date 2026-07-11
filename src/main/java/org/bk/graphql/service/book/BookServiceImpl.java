@@ -1,15 +1,17 @@
 package org.bk.graphql.service.book;
 
+import org.bk.graphql.application.port.out.BookAuthorLinkStore;
+import org.bk.graphql.application.port.out.BookStore;
 import org.bk.graphql.common.query.ById;
 import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.domain.Book;
 import org.bk.graphql.domain.BookId;
 import org.bk.graphql.domain.ImmutableBook;
-import org.bk.graphql.entity.BookAuthorLinkEntity;
-import org.bk.graphql.entity.BookEntity;
-import org.bk.graphql.repository.book.BookRepository;
-import org.bk.graphql.repository.bookauthorlink.BookAuthorLinkRepository;
+import org.bk.graphql.domain.event.BookAuthorsChangedEvent;
+import org.bk.graphql.domain.event.BookCreatedEvent;
+import org.bk.graphql.domain.validation.BookName;
+import org.bk.graphql.domain.validation.PageCount;
 import org.bk.graphql.service.book.BookCommands.CreateBookCommand;
 import org.bk.graphql.service.book.BookCommands.CreateOrUpdateBookCommand;
 import org.bk.graphql.service.book.BookCommands.UpdateBookCommand;
@@ -17,6 +19,7 @@ import org.bk.graphql.service.book.BookCommands.UpdateBookNameCommand;
 import org.bk.graphql.service.book.BookQueries.GetBooksQuery;
 import org.bk.graphql.service.exception.DomainException;
 import org.bk.graphql.util.Uuids;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,23 +29,25 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.StreamSupport;
+import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
-    private final BookRepository bookRepository;
-    private final BookAuthorLinkRepository bookAuthorLinkRepository;
+    private final BookStore bookStore;
+    private final BookAuthorLinkStore bookAuthorLinkStore;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
     private final Uuids uuids;
 
     public BookServiceImpl(
-            BookRepository bookRepository,
-            BookAuthorLinkRepository bookAuthorLinkRepository,
+            BookStore bookStore,
+            BookAuthorLinkStore bookAuthorLinkStore,
+            ApplicationEventPublisher eventPublisher,
             Clock clock,
             Uuids uuids) {
-        this.bookRepository = bookRepository;
-        this.bookAuthorLinkRepository = bookAuthorLinkRepository;
+        this.bookStore = bookStore;
+        this.bookAuthorLinkStore = bookAuthorLinkStore;
+        this.eventPublisher = eventPublisher;
         this.clock = clock;
         this.uuids = uuids;
     }
@@ -50,139 +55,151 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book createBook(CreateBookCommand command) {
-        UUID bookId = uuids.generateUuid();
-
         Instant now = clock.instant();
-        BookEntity book = new BookEntity(
-                bookId,
-                command.name(),
-                command.pageCount(),
+        Book newBook = Book.create(
+                BookId.of(uuids.generateUuid()),
+                BookName.of(command.name()).value(),
+                List.of(),
+                PageCount.of(command.pageCount()).value(),
                 now,
                 now,
                 0
         );
-        BookEntity savedBook = bookRepository.save(book);
-        final List<BookAuthorLinkEntity> bookAuthorLinks = command.authors().stream().map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid(), savedBook.id(), authorId.id(), now, now))
-                .distinct()
-                .toList();
-        bookAuthorLinkRepository.upsertAll(bookAuthorLinks);
-        Book withoutAuthors = savedBook.toModel();
-        return ImmutableBook.builder().from(withoutAuthors)
-                .authors(bookAuthorLinks.stream().map(link -> AuthorId.of(link.authorId())).toList())
-                .build();
+        Book saved = persistBookWithAuthors(
+                newBook,
+                command.authors().stream().distinct().toList(),
+                now
+        );
+        eventPublisher.publishEvent(new BookCreatedEvent(saved.id(), saved.authors()));
+        return saved;
     }
 
     @Override
     @Transactional
     public Book createOrUpdateBook(CreateOrUpdateBookCommand command) {
-        Optional<BookEntity> book = bookRepository.findById(command.id());
+        Optional<Book> book = bookStore.findById(BookId.of(command.id()));
 
         Instant now = clock.instant();
         return book.map(existingBook -> {
             if (command.version() == 0) {
-                return existingBook.toModel();
+                return enrichWithAuthors(existingBook);
             }
-            BookEntity updatedBook = new BookEntity(
-                    book.get().id(),
-                    command.name(),
-                    command.pageCount(),
+            Book updatedBook = Book.create(
+                    existingBook.id(),
+                    BookName.of(command.name()).value(),
+                    List.of(),
+                    PageCount.of(command.pageCount()).value(),
                     existingBook.createdAt(),
                     now,
                     command.version()
             );
-            BookEntity savedBook = bookRepository.save(updatedBook);
-            List<BookAuthorLinkEntity> bookAuthorLinks = command.authors().stream().map(authorId ->
-                    new BookAuthorLinkEntity(uuids.generateUuid(), updatedBook.id(), authorId.id(), now, now)).toList();
-            bookAuthorLinkRepository.upsertAll(bookAuthorLinks);
-            Book withoutAuthors = savedBook.toModel();
-            return ImmutableBook.builder().from(withoutAuthors)
-                    .authors(bookAuthorLinks.stream().map(link -> AuthorId.of(link.authorId())).toList())
-                    .build();
+            Book saved = persistBookWithAuthors(
+                    updatedBook,
+                    command.authors().stream().distinct().toList(),
+                    now
+            );
+            eventPublisher.publishEvent(new BookAuthorsChangedEvent(saved.id(), saved.authors()));
+            return saved;
         }).orElseGet(() -> {
-            BookEntity newBook = new BookEntity(
-                    command.id(),
-                    command.name(),
-                    command.pageCount(),
+            Book newBook = Book.create(
+                    BookId.of(command.id()),
+                    BookName.of(command.name()).value(),
+                    List.of(),
+                    PageCount.of(command.pageCount()).value(),
                     now,
                     now,
                     0
             );
-            BookEntity savedBook = bookRepository.save(newBook);
-            final List<BookAuthorLinkEntity> bookAuthorLinks = command.authors().stream().map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid(), savedBook.id(), authorId.id(), now, now))
-                    .distinct()
-                    .toList();
-            bookAuthorLinkRepository.upsertAll(bookAuthorLinks);
-            Book withoutAuthors = savedBook.toModel();
-            return ImmutableBook.builder().from(withoutAuthors)
-                    .authors(bookAuthorLinks.stream().map(link -> AuthorId.of(link.authorId())).toList())
-                    .build();
+            Book saved = persistBookWithAuthors(
+                    newBook,
+                    command.authors().stream().distinct().toList(),
+                    now
+            );
+            eventPublisher.publishEvent(new BookCreatedEvent(saved.id(), saved.authors()));
+            return saved;
         });
     }
 
     @Override
+    @Transactional
     public Book updateBook(UpdateBookCommand command) {
-        BookEntity book = bookRepository.findById(command.id())
+        Book book = bookStore.findById(BookId.of(command.id()))
                 .orElseThrow(() -> new DomainException("Book not found"));
         Instant now = clock.instant();
-        BookEntity updatedBook = new BookEntity(
+        Book updatedBook = Book.create(
                 book.id(),
-                command.name(),
-                command.pageCount(),
+                BookName.of(command.name()).value(),
+                List.of(),
+                PageCount.of(command.pageCount()).value(),
                 book.createdAt(),
                 now,
                 command.version()
         );
-        BookEntity savedBook = bookRepository.save(updatedBook);
-        List<BookAuthorLinkEntity> bookAuthorLinks = command.authors().stream().map(authorId ->
-                new BookAuthorLinkEntity(uuids.generateUuid(), updatedBook.id(), authorId.id(), now, now)).toList();
-        bookAuthorLinkRepository.upsertAll(bookAuthorLinks);
-        Book withoutAuthors = savedBook.toModel();
-        return ImmutableBook.builder().from(withoutAuthors)
-                .authors(bookAuthorLinks.stream().map(link -> AuthorId.of(link.authorId())).toList())
-                .build();
+        Book saved = persistBookWithAuthors(
+                updatedBook,
+                command.authors().stream().distinct().toList(),
+                now
+        );
+        eventPublisher.publishEvent(new BookAuthorsChangedEvent(saved.id(), saved.authors()));
+        return saved;
     }
 
     @Override
+    @Transactional
     public Book updateBookName(UpdateBookNameCommand command) {
-        BookEntity book = bookRepository.findById(command.id())
+        Book book = bookStore.findById(BookId.of(command.id()))
                 .orElseThrow(() -> new DomainException("Book not found"));
-        BookEntity updatedBook = new BookEntity(
+        Book updatedBook = Book.create(
                 book.id(),
-                command.name(),
+                BookName.of(command.name()).value(),
+                List.of(),
                 book.pageCount(),
                 book.createdAt(),
                 clock.instant(),
                 command.version()
         );
-        BookEntity savedBook = bookRepository.save(updatedBook);
-        return savedBook.toModel();
+        Book savedBook = bookStore.save(updatedBook);
+        return enrichWithAuthors(savedBook);
     }
 
     @Override
     public Page<Book> getBooks(GetBooksQuery query) {
-        return bookRepository
-                .findAll(Pageable.ofSize(query.size()).withPage(query.page()))
-                .map(BookEntity::toModel);
+        return bookStore.findAll(Pageable.ofSize(query.size()).withPage(query.page()))
+                .map(this::enrichWithAuthors);
     }
 
     @Override
     public Page<Book> getBooks(Pageable pageable) {
-        return bookRepository.findAll(pageable)
-                .map(BookEntity::toModel);
+        return bookStore.findAll(pageable)
+                .map(this::enrichWithAuthors);
     }
 
     @Override
     public Optional<Book> getBook(ById<BookId> query) {
         BookId bookId = query.id();
-        return bookRepository.findById(bookId.id()).map(BookEntity::toModel);
+        return bookStore.findById(bookId).map(this::enrichWithAuthors);
     }
 
     @Override
     public List<Book> getBooks(ByIds<BookId> query) {
-        return StreamSupport.stream(
-                bookRepository.findAllById(
-                        query.ids().stream().map(BookId::id).toList()
-                ).spliterator(), false
-        ).map(BookEntity::toModel).collect(java.util.stream.Collectors.toList());
+        return bookStore.findAllByIds(query.ids()).stream().map(this::enrichWithAuthors).toList();
+    }
+
+    private Book persistBookWithAuthors(Book book, List<AuthorId> authorIds, Instant now) {
+        Book savedBook = bookStore.save(book);
+        bookAuthorLinkStore.replaceAuthorsForBook(savedBook.id(), authorIds.stream().collect(Collectors.toSet()), now);
+        return ImmutableBook.builder()
+                .from(savedBook)
+                .authors(authorIds)
+                .build();
+    }
+
+    private Book enrichWithAuthors(Book book) {
+        List<AuthorId> authors = bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(book.id()))
+                .getOrDefault(book.id(), List.of());
+        return ImmutableBook.builder()
+                .from(book)
+                .authors(authors)
+                .build();
     }
 }

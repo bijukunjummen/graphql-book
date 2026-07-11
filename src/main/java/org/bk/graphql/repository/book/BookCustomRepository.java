@@ -4,6 +4,7 @@ import org.bk.graphql.entity.BookEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface BookCustomRepository {
     Page<BookEntity> getRankedBooks(Pageable pageable);
 }
