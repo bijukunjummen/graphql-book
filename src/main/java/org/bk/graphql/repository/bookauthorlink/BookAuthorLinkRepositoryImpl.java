@@ -11,7 +11,7 @@ public class BookAuthorLinkRepositoryImpl implements BookAuthorLinkCustomReposit
             INSERT INTO book_author (id, book_id, author_id, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?)
             ON CONFLICT (book_id, author_id) DO UPDATE SET
-                updated_at = values(updated_at)
+                updated_at = EXCLUDED.updated_at
             """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -24,9 +24,9 @@ public class BookAuthorLinkRepositoryImpl implements BookAuthorLinkCustomReposit
     public void upsertAll(List<BookAuthorLinkEntity> entities) {
         jdbcTemplate.batchUpdate(UPSERT_BATCH_QUERY, entities, entities.size(), (ps, e) ->
         {
-            ps.setString(1, e.id());
-            ps.setString(2, e.bookId());
-            ps.setString(3, e.authorId());
+            ps.setObject(1, e.id());
+            ps.setObject(2, e.bookId());
+            ps.setObject(3, e.authorId());
             ps.setTimestamp(4, Timestamp.from(e.createdAt()));
             ps.setTimestamp(5, Timestamp.from(e.updatedAt()));
         });

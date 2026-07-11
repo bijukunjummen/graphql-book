@@ -8,10 +8,11 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Table("authors")
 public record AuthorEntity(
-    @Id String id,
+    @Id UUID id,
     String name,
     Instant createdAt,
     Instant updatedAt,
@@ -19,7 +20,7 @@ public record AuthorEntity(
 ) {
     public Author toModel() {
         return ImmutableAuthor.builder()
-                .id(AuthorId.parse(id))
+                .id(AuthorId.of(id))
                 .name(name)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
@@ -29,7 +30,7 @@ public record AuthorEntity(
 
     public static AuthorEntity fromModel(Author author) {
         return new AuthorEntity(
-                author.id().id().toString(),
+                author.id().id(),
                 author.name(),
                 author.createdAt(),
                 author.updatedAt(),

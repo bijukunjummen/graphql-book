@@ -31,6 +31,7 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -73,7 +74,7 @@ class AuthorServiceTest {
             softly.assertThat(createdAuthor.version()).isZero();
         });
         verify(authorRepository).save(assertArg(savedAuthor -> assertSoftly(softly -> {
-            softly.assertThat(savedAuthor.id()).isEqualTo(AuthorTestData.AUTHOR_ID_1.id().toString());
+            softly.assertThat(savedAuthor.id()).isEqualTo(AuthorTestData.AUTHOR_ID_1.id());
             softly.assertThat(savedAuthor.name()).isEqualTo("George Orwell");
             softly.assertThat(savedAuthor.createdAt()).isEqualTo(FIXED_CLOCK.instant());
             softly.assertThat(savedAuthor.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
@@ -83,7 +84,7 @@ class AuthorServiceTest {
 
     @Test
     void test_createOrUpdateAuthor_whenAuthorMissing_savesNewAuthorAndReturnsAuthor() {
-        String authorId = "38469694-b350-4f1a-89be-1c8fd9aeaf2d";
+        UUID authorId = UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
         AuthorEntity savedAuthor = authorEntity(authorId, "George Orwell", 0);
         when(authorRepository.findById(authorId)).thenReturn(Optional.empty());
         when(authorRepository.save(any(AuthorEntity.class))).thenReturn(savedAuthor);
@@ -102,7 +103,7 @@ class AuthorServiceTest {
 
     @Test
     void test_createOrUpdateAuthor_whenAuthorExistsAndVersionPresent_savesUpdatedAuthorAndReturnsAuthor() {
-        String authorId = "38469694-b350-4f1a-89be-1c8fd9aeaf2d";
+        UUID authorId = UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
         AuthorEntity existingAuthor = authorEntity(authorId, "George Orwell", 1);
         AuthorEntity savedAuthor = authorEntity(authorId, "George Orwell Updated", 2);
         when(authorRepository.findById(authorId)).thenReturn(Optional.of(existingAuthor));
@@ -122,7 +123,7 @@ class AuthorServiceTest {
 
     @Test
     void test_createOrUpdateAuthor_whenAuthorExistsAndCommandVersionIsZero_doesNotSaveAndReturnsExistingAuthor() {
-        String authorId = "38469694-b350-4f1a-89be-1c8fd9aeaf2d";
+        UUID authorId = UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
         AuthorEntity existingAuthor = authorEntity(authorId, "George Orwell", 1);
         when(authorRepository.findById(authorId)).thenReturn(Optional.of(existingAuthor));
 
@@ -134,7 +135,7 @@ class AuthorServiceTest {
 
     @Test
     void test_updateAuthorName_whenAuthorExists_savesNameAndVersionOnly() {
-        String authorId = "38469694-b350-4f1a-89be-1c8fd9aeaf2d";
+        UUID authorId = UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
         AuthorEntity existingAuthor = authorEntity(authorId, "George Orwell", 1);
         AuthorEntity savedAuthor = authorEntity(authorId, "Eric Blair", 2);
         when(authorRepository.findById(authorId)).thenReturn(Optional.of(existingAuthor));
@@ -154,7 +155,7 @@ class AuthorServiceTest {
 
     @Test
     void test_updateAuthorName_whenAuthorMissing_throwsDomainException() {
-        String authorId = "38469694-b350-4f1a-89be-1c8fd9aeaf2d";
+        UUID authorId = UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
         when(authorRepository.findById(authorId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> authorService.updateAuthorName(new UpdateAuthorNameCommand(authorId, "Eric Blair", 2)))
@@ -166,26 +167,26 @@ class AuthorServiceTest {
 
     @Test
     void test_getAuthor_withExistingAuthorId_returnsAuthor() {
-        String authorId = "38469694-b350-4f1a-89be-1c8fd9aeaf2d";
-        when(authorRepository.findById(AuthorId.parse(authorId).toString()))
+        UUID authorId = UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
+        when(authorRepository.findById(authorId))
                 .thenReturn(Optional.of(authorEntity(authorId, "George Orwell", 1)));
 
-        Author author = authorService.getAuthor(new ById<>(AuthorId.parse(authorId)));
+        Author author = authorService.getAuthor(new ById<>(AuthorId.of(authorId)));
 
         assertAuthor(author, authorId, "George Orwell", 1);
     }
 
     @Test
     void test_getAuthors_withAuthorIds_returnsAuthors() {
-        String firstAuthorId = "38469694-b350-4f1a-89be-1c8fd9aeaf2d";
-        String secondAuthorId = "e9f6a86e-4ffb-49d6-92ee-d1fe03cfa200";
-        when(authorRepository.findAllByIdIn(ArgumentMatchers.<Set<String>>any()))
+        UUID firstAuthorId = UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
+        UUID secondAuthorId = UUID.fromString("e9f6a86e-4ffb-49d6-92ee-d1fe03cfa200");
+        when(authorRepository.findAllByIdIn(ArgumentMatchers.<Set<UUID>>any()))
                 .thenReturn(List.of(
                         authorEntity(firstAuthorId, "George Orwell", 1),
                         authorEntity(secondAuthorId, "Aldous Huxley", 1)
                 ));
 
-        List<Author> authors = authorService.getAuthors(new ByIds<>(List.of(AuthorId.parse(firstAuthorId), AuthorId.parse(secondAuthorId))));
+        List<Author> authors = authorService.getAuthors(new ByIds<>(List.of(AuthorId.of(firstAuthorId), AuthorId.of(secondAuthorId))));
 
         assertThat(authors)
                 .hasSize(2)
@@ -193,13 +194,13 @@ class AuthorServiceTest {
                         author -> assertAuthor(author, firstAuthorId, "George Orwell", 1),
                         author -> assertAuthor(author, secondAuthorId, "Aldous Huxley", 1)
                 );
-        verify(authorRepository).findAllByIdIn(ArgumentMatchers.<Set<String>>assertArg(ids -> assertThat(ids)
+        verify(authorRepository).findAllByIdIn(ArgumentMatchers.<Set<UUID>>assertArg(ids -> assertThat(ids)
                 .containsExactlyInAnyOrder(firstAuthorId, secondAuthorId)));
     }
 
     @Test
     void test_getAuthors_withPageable_returnsMappedPage() {
-        String authorId = "38469694-b350-4f1a-89be-1c8fd9aeaf2d";
+        UUID authorId = UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
         Pageable pageable = PageRequest.of(1, 3, Sort.by("name"));
         when(authorRepository.findAll(pageable))
                 .thenReturn(new PageImpl<>(List.of(authorEntity(authorId, "George Orwell", 1)), pageable, 1));
@@ -212,13 +213,13 @@ class AuthorServiceTest {
         verify(authorRepository).findAll(pageable);
     }
 
-    private static AuthorEntity authorEntity(String id, String name, int version) {
+    private static AuthorEntity authorEntity(UUID id, String name, int version) {
         return new AuthorEntity(id, name, DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, version);
     }
 
-    private static void assertAuthor(Author author, String id, String name, int version) {
+    private static void assertAuthor(Author author, UUID id, String name, int version) {
         assertSoftly(softly -> {
-            softly.assertThat(author.id()).isEqualTo(AuthorId.parse(id));
+            softly.assertThat(author.id()).isEqualTo(AuthorId.of(id));
             softly.assertThat(author.name()).isEqualTo(name);
             softly.assertThat(author.version()).isEqualTo(version);
         });

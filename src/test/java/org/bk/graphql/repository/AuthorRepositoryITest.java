@@ -1,5 +1,6 @@
 package org.bk.graphql.repository;
 
+import org.bk.graphql.AuthorTestData;
 import org.bk.graphql.TimeTestData;
 import org.bk.graphql.entity.AuthorEntity;
 import org.bk.graphql.repository.author.AuthorRepository;
@@ -30,15 +31,15 @@ class AuthorRepositoryITest {
 
     @Test
     void test_authorRepositoryCrudOperations_withAuthor_returnsSavedUpdatedAndPagedAuthor() {
-        AuthorEntity author = new AuthorEntity("id", "first last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 0);
+        AuthorEntity author = AuthorEntity.fromModel(AuthorTestData.sampleAuthor_1());
         authorRepository.save(author);
-        assertThat(authorRepository.findById("id"))
-                .hasValue(new AuthorEntity("id", "first last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1));
-        assertThat(authorRepository.save(new AuthorEntity("id", "firstUpdated last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1)))
-                .isEqualTo(new AuthorEntity("id", "firstUpdated last", author.createdAt(), DEFAULT_UPDATED_DATE, 2));
+        assertThat(authorRepository.findById(author.id()))
+                .hasValue(author);
+        assertThat(authorRepository.save(new AuthorEntity(author.id(), "firstUpdated last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1)))
+                .isEqualTo(new AuthorEntity(author.id(), "firstUpdated last", author.createdAt(), DEFAULT_UPDATED_DATE, 2));
 
-        assertThat(authorRepository.findById("id"))
-                .hasValue(new AuthorEntity("id", "firstUpdated last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 2));
+        assertThat(authorRepository.findById(author.id()))
+                .hasValue(new AuthorEntity(author.id(), "firstUpdated last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 2));
         Page<AuthorEntity> page = authorRepository.findAll(Pageable.ofSize(5));
         assertThat(page.getTotalElements()).isEqualTo(1);
     }

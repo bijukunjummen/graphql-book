@@ -9,20 +9,21 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Table("book_author")
 public record BookAuthorLinkEntity(
-        @Id String id,
-        String bookId,
-        String authorId,
+        @Id UUID id,
+        UUID bookId,
+        UUID authorId,
         Instant createdAt,
         Instant updatedAt) {
 
     public static BookAuthorLinkEntity fromModel(BookAuthorLink bookAuthor) {
         return new BookAuthorLinkEntity(
-                bookAuthor.id().toString(),
-                bookAuthor.bookId().id().toString(),
-                bookAuthor.authorId().id().toString(),
+                bookAuthor.id().id(),
+                bookAuthor.bookId().id(),
+                bookAuthor.authorId().id(),
                 bookAuthor.createdAt(),
                 bookAuthor.updatedAt()
         );
@@ -30,9 +31,9 @@ public record BookAuthorLinkEntity(
 
     public BookAuthorLink toModel() {
         return ImmutableBookAuthorLink.builder()
-                .id(BookAuthorLinkId.parse(id))
-                .bookId(BookId.parse(bookId))
-                .authorId(AuthorId.parse(authorId))
+                .id(BookAuthorLinkId.of(id))
+                .bookId(BookId.of(bookId))
+                .authorId(AuthorId.of(authorId))
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();

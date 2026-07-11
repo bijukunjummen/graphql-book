@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-public class BookAuthorsDataLoader implements BiFunction<Set<BookId>, BatchLoaderEnvironment, Mono<Map<BookId, AuthorsWrapper>>> {
+public class BookAuthorsDataLoader implements BiFunction<Set<BookId>, BatchLoaderEnvironment, Mono<Map<BookId, BookAuthorsDataLoader.AuthorsWrapper>>> {
     private final BookService bookService;
 
     public BookAuthorsDataLoader(BookService bookService) {
@@ -36,6 +36,8 @@ public class BookAuthorsDataLoader implements BiFunction<Set<BookId>, BatchLoade
                     }
                 ));
         });
+    }
+    public record AuthorsWrapper(List<AuthorDto> authors) {
     }
 }
 

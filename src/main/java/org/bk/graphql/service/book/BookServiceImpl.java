@@ -54,7 +54,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book createBook(CreateBookCommand command) {
-        String bookId = uuids.generateUuid().toString();
+        UUID bookId = uuids.generateUuid();
 
         Instant now = clock.instant();
         BookEntity book = new BookEntity(
@@ -66,7 +66,7 @@ public class BookServiceImpl implements BookService {
                 0
         );
         BookEntity savedBook = bookRepository.save(book);
-        bookAuthorLinkService.replaceAuthorsForBook(BookId.parse(savedBook.id()), command.authors());
+        bookAuthorLinkService.replaceAuthorsForBook(BookId.of(savedBook.id()), command.authors());
         return savedBook.toModel();
     }
 
@@ -88,7 +88,7 @@ public class BookServiceImpl implements BookService {
                     command.version()
             );
             BookEntity savedBook = bookRepository.save(updatedBook);
-            bookAuthorLinkService.replaceAuthorsForBook(BookId.parse(savedBook.id()), command.authors());
+            bookAuthorLinkService.replaceAuthorsForBook(BookId.of(savedBook.id()), command.authors());
             return savedBook.toModel();
         }).orElseGet(() -> {
             BookEntity newBook = new BookEntity(
@@ -100,7 +100,7 @@ public class BookServiceImpl implements BookService {
                     0
             );
             BookEntity savedBook = bookRepository.save(newBook);
-            bookAuthorLinkService.replaceAuthorsForBook(BookId.parse(savedBook.id()), command.authors());
+            bookAuthorLinkService.replaceAuthorsForBook(BookId.of(savedBook.id()), command.authors());
             return savedBook.toModel();
         });
     }
@@ -119,7 +119,7 @@ public class BookServiceImpl implements BookService {
                 command.version()
         );
         BookEntity savedBook = bookRepository.save(updatedBook);
-        bookAuthorLinkService.replaceAuthorsForBook(BookId.parse(savedBook.id()), command.authors());
+        bookAuthorLinkService.replaceAuthorsForBook(BookId.of(savedBook.id()), command.authors());
         return savedBook.toModel();
     }
 
@@ -155,14 +155,14 @@ public class BookServiceImpl implements BookService {
     @Override
     public Optional<Book> getBook(ById<BookId> query) {
         BookId bookId = query.id();
-        return bookRepository.findById(bookId.id().toString()).map(BookEntity::toModel);
+        return bookRepository.findById(bookId.id()).map(BookEntity::toModel);
     }
 
     @Override
     public List<Book> getBooks(ByIds<BookId> query) {
         return StreamSupport.stream(
                 bookRepository.findAllById(
-                        query.ids().stream().map(BookId::id).map(UUID::toString).toList()
+                        query.ids().stream().map(BookId::id).toList()
                 ).spliterator(), false
         ).map(BookEntity::toModel).collect(java.util.stream.Collectors.toList());
     }

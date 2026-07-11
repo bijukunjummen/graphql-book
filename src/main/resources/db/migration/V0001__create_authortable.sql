@@ -1,6 +1,6 @@
 CREATE TABLE AUTHORS
 (
-    id         VARCHAR(36) PRIMARY KEY,
+    id         UUID PRIMARY KEY,
     name VARCHAR(255),
     version    int,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

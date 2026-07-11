@@ -16,6 +16,7 @@ import org.bk.graphql.service.book.BookCommands.UpdateBookCommand;
 import org.bk.graphql.service.book.BookCommands.UpdateBookNameCommand;
 import org.bk.graphql.service.book.BookQueries;
 import org.bk.graphql.service.book.BookServiceImpl;
+import org.bk.graphql.service.bookauthorlink.BookAuthorLinkService;
 import org.bk.graphql.service.exception.DomainException;
 import org.bk.graphql.util.Uuids;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ import org.springframework.data.domain.Sort;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -63,6 +65,9 @@ class BookServiceTest {
     @Mock
     private AuthorService authorService;
 
+    @Mock
+    private BookAuthorLinkService bookAuthorLinkService;
+
     @Spy
     private Clock clock = TimeTestData.FIXED_CLOCK;
 
@@ -83,7 +88,7 @@ class BookServiceTest {
             softly.assertThat(createdBook.pageCount()).isEqualTo(100);
         });
         verify(bookRepository).save(assertArg(savedBook -> assertSoftly(softly -> {
-            softly.assertThat(savedBook.id()).isEqualTo(BOOK_ID.toString());
+            softly.assertThat(savedBook.id()).isEqualTo(BOOK_ID);
             softly.assertThat(savedBook.name()).isEqualTo("book1");
             softly.assertThat(savedBook.pageCount()).isEqualTo(100);
             softly.assertThat(savedBook.createdAt()).isEqualTo(FIXED_CLOCK.instant());
@@ -94,7 +99,7 @@ class BookServiceTest {
 
     @Test
     void test_createOrUpdateBook_whenBookMissing_savesNewBookAndReturnsBook() {
-        String bookId = "2f5ac49b-af88-4e72-a549-5f86aff4e549";
+        UUID bookId = UUID.fromString("2f5ac49b-af88-4e72-a549-5f86aff4e549");
         AuthorId authorId = AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d");
         BookEntity savedBook = bookEntity(bookId, "Good Omens", 490, 0, authorId);
         when(bookRepository.findById(bookId))
@@ -114,7 +119,7 @@ class BookServiceTest {
 
     @Test
     void test_createOrUpdateBook_whenBookExistsAndVersionPresent_savesUpdatedBookAndReturnsBook() {
-        String bookId = "2f5ac49b-af88-4e72-a549-5f86aff4e549";
+        UUID bookId = UUID.fromString("2f5ac49b-af88-4e72-a549-5f86aff4e549");
         AuthorId authorId = AuthorId.parse("38469694-b350-4f1a-89be-1c8fd9aeaf2d");
         BookEntity existingBook = bookEntity(bookId, "Good Omens", 490, 1, AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d"));
         BookEntity savedBook = bookEntity(bookId, "Good Omens Updated", 512, 2, authorId);
@@ -135,7 +140,7 @@ class BookServiceTest {
 
     @Test
     void test_createOrUpdateBook_whenBookExistsAndCommandVersionIsZero_doesNotSaveAndReturnsExistingBook() {
-        String bookId = "2f5ac49b-af88-4e72-a549-5f86aff4e549";
+        UUID bookId = UUID.fromString("2f5ac49b-af88-4e72-a549-5f86aff4e549");
         AuthorId authorId = AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d");
         BookEntity existingBook = bookEntity(bookId, "Good Omens", 490, 1, authorId);
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
@@ -148,7 +153,7 @@ class BookServiceTest {
 
     @Test
     void test_updateBook_whenBookExists_savesEditableFieldsAndReturnsBook() {
-        String bookId = "d8d387ac-0b36-4d33-b6d2-9f1a4591ec35";
+        UUID bookId = UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
         AuthorId authorId = AuthorId.parse("f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e");
         BookEntity existingBook = bookEntity(bookId, "A Wizard of Earthsea", 205, 1, authorId);
         BookEntity savedBook = bookEntity(bookId, "The Tombs of Atuan", 180, 2, authorId);
@@ -168,7 +173,7 @@ class BookServiceTest {
 
     @Test
     void test_updateBook_whenBookMissing_throwsDomainException() {
-        String bookId = "d8d387ac-0b36-4d33-b6d2-9f1a4591ec35";
+        UUID bookId = UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> bookService.updateBook(new UpdateBookCommand(bookId, "The Tombs of Atuan", 180, Set.of(), 2)))
@@ -180,7 +185,7 @@ class BookServiceTest {
 
     @Test
     void test_updateBookName_whenBookExists_savesNameAndVersionOnly() {
-        String bookId = "d8d387ac-0b36-4d33-b6d2-9f1a4591ec35";
+        UUID bookId = UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
         AuthorId authorId = AuthorId.parse("f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e");
         BookEntity existingBook = bookEntity(bookId, "A Wizard of Earthsea", 205, 1, authorId);
         BookEntity savedBook = bookEntity(bookId, "The Tombs of Atuan", 205, 2, authorId);
@@ -200,7 +205,7 @@ class BookServiceTest {
 
     @Test
     void test_updateBookName_whenBookMissing_throwsDomainException() {
-        String bookId = "d8d387ac-0b36-4d33-b6d2-9f1a4591ec35";
+        UUID bookId = UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> bookService.updateBookName(new UpdateBookNameCommand(bookId, "The Tombs of Atuan", 2)))
@@ -212,7 +217,7 @@ class BookServiceTest {
 
     @Test
     void test_getBooks_withQuery_returnsMappedPageUsingRequestedPage() {
-        String bookId = "8ac017c8-fafb-4f6c-88fe-59651bdc04b8";
+        UUID bookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
         AuthorId authorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         when(bookRepository.findAll(any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(bookEntity(bookId, "1984", 328, 1, authorId))));
@@ -231,7 +236,7 @@ class BookServiceTest {
 
     @Test
     void test_getBooks_withPageable_returnsMappedPage() {
-        String bookId = "8ac017c8-fafb-4f6c-88fe-59651bdc04b8";
+        UUID bookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
         AuthorId authorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         Pageable pageable = PageRequest.of(1, 3, Sort.by("name"));
         when(bookRepository.findAll(pageable))
@@ -247,11 +252,11 @@ class BookServiceTest {
 
     @Test
     void test_getBook_withExistingBookId_returnsBook() {
-        String bookId = "8ac017c8-fafb-4f6c-88fe-59651bdc04b8";
+        UUID bookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
         AuthorId authorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(bookEntity(bookId, "1984", 328, 1, authorId)));
 
-        Optional<Book> book = bookService.getBook(new ById<>(BookId.parse(bookId)));
+        Optional<Book> book = bookService.getBook(new ById<>(BookId.of(bookId)));
 
         assertThat(book)
                 .hasValueSatisfying(foundBook -> assertBook(foundBook, bookId, "1984", 328, 1, authorId));
@@ -259,8 +264,8 @@ class BookServiceTest {
 
     @Test
     void test_getBooks_withBookIds_returnsBooks() {
-        String firstBookId = "8ac017c8-fafb-4f6c-88fe-59651bdc04b8";
-        String secondBookId = "c22ee984-7f74-4158-8bd5-79235b0ad051";
+        UUID firstBookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
+        UUID secondBookId = UUID.fromString("c22ee984-7f74-4158-8bd5-79235b0ad051");
         AuthorId firstAuthorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         AuthorId secondAuthorId = AuthorId.parse("12c2d97c-4654-4398-bc0e-c40cf96715c6");
         when(bookRepository.findAllById(List.of(firstBookId, secondBookId)))
@@ -269,7 +274,7 @@ class BookServiceTest {
                         bookEntity(secondBookId, "Brave New World", 268, 1, secondAuthorId)
                 ));
 
-        List<Book> books = bookService.getBooks(new ByIds<>(List.of(BookId.parse(firstBookId), BookId.parse(secondBookId))));
+        List<Book> books = bookService.getBooks(new ByIds<>(List.of(BookId.of(firstBookId), BookId.of(secondBookId))));
 
         assertThat(books)
                 .hasSize(2)
@@ -281,8 +286,8 @@ class BookServiceTest {
 
     @Test
     void test_getAuthorsForBooks_withBookIds_returnsAuthorsByBook() {
-        String firstBookId = "8ac017c8-fafb-4f6c-88fe-59651bdc04b8";
-        String secondBookId = "c22ee984-7f74-4158-8bd5-79235b0ad051";
+        UUID firstBookId = UUID.fromString("8ac017c8-fafb-4f6c-88fe-59651bdc04b8");
+        UUID secondBookId = UUID.fromString("c22ee984-7f74-4158-8bd5-79235b0ad051");
         AuthorId firstAuthorId = AuthorId.parse("d50657f5-5e00-4117-ab97-e6a45e33e444");
         AuthorId secondAuthorId = AuthorId.parse("12c2d97c-4654-4398-bc0e-c40cf96715c6");
         Author firstAuthor = Author.create(firstAuthorId, "George Orwell", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 1);
@@ -295,23 +300,22 @@ class BookServiceTest {
         when(authorService.getAuthors(ArgumentMatchers.<ByIds<AuthorId>>any()))
                 .thenReturn(List.of(firstAuthor, secondAuthor));
 
-        var authorsByBook = bookService.getAuthorsForBooks(new ByIds<>(List.of(BookId.parse(firstBookId), BookId.parse(secondBookId))));
+        Map<BookId, List<Author>> authorsByBook = bookService.getAuthorsForBooks(new ByIds<>(List.of(BookId.of(firstBookId), BookId.of(secondBookId))));
 
         assertThat(authorsByBook)
-                .containsEntry(BookId.parse(firstBookId), List.of(firstAuthor))
-                .containsEntry(BookId.parse(secondBookId), List.of(secondAuthor));
+                .containsEntry(BookId.of(firstBookId), List.of(firstAuthor))
+                .containsEntry(BookId.of(secondBookId), List.of(secondAuthor));
         verify(authorService).getAuthors(ArgumentMatchers.<ByIds<AuthorId>>assertArg(query -> assertThat(query.ids())
                 .containsExactly(firstAuthorId, secondAuthorId)));
     }
 
-    private static BookEntity bookEntity(String id, String name, int pageCount, int version, AuthorId authorId) {
+    private static BookEntity bookEntity(UUID id, String name, int pageCount, int version, AuthorId authorId) {
         return new BookEntity(id, name, pageCount, DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, version);
     }
 
-
-    private static void assertBook(Book book, String id, String name, int pageCount, int version, AuthorId authorId) {
+    private static void assertBook(Book book, UUID id, String name, int pageCount, int version, AuthorId authorId) {
         assertSoftly(softly -> {
-            softly.assertThat(book.id()).isEqualTo(BookId.parse(id));
+            softly.assertThat(book.id()).isEqualTo(BookId.of(id));
             softly.assertThat(book.name()).isEqualTo(name);
             softly.assertThat(book.pageCount()).isEqualTo(pageCount);
             softly.assertThat(book.version()).isEqualTo(version);

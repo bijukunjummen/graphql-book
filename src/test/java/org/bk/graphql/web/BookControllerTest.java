@@ -20,6 +20,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Set;
+import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -49,26 +50,26 @@ class BookControllerTest {
     @Test
     void test_findBookById_withExistingBook_returnsBook() {
         var a12 = authorService.createOrUpdateAuthor(
-            new CreateOrUpdateAuthorCommand(
-                "c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d",
-                "Terry Pratchett"
-            )
+                new CreateOrUpdateAuthorCommand(
+                        UUID.fromString("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d"),
+                        "Terry Pratchett"
+                )
         );
 
         var a13 = authorService.createOrUpdateAuthor(
-            new CreateOrUpdateAuthorCommand(
-                "38469694-b350-4f1a-89be-1c8fd9aeaf2d",
-                "Neil Gaiman"
-            )
+                new CreateOrUpdateAuthorCommand(
+                        UUID.fromString("38469694-b350-4f1a-89be-1c8fd9aeaf2d"),
+                        "Neil Gaiman"
+                )
         );
 
         bookService.createOrUpdateBook(
-            new CreateOrUpdateBookCommand(
-                "2f5ac49b-af88-4e72-a549-5f86aff4e549",
-                "Good Omens",
-                490,
-                Set.of(a12.id(), a13.id())
-            )
+                new CreateOrUpdateBookCommand(
+                        UUID.fromString("2f5ac49b-af88-4e72-a549-5f86aff4e549"),
+                        "Good Omens",
+                        490,
+                        Set.of(a12.id(), a13.id())
+                )
         );
 
         String query = """
@@ -139,19 +140,19 @@ class BookControllerTest {
     @Test
     void test_updateBookName_withExistingBook_returnsRenamedBook() {
         var author = authorService.createOrUpdateAuthor(
-            new CreateOrUpdateAuthorCommand(
-                "f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e",
-                "Ursula K. Le Guin"
-            )
+                new CreateOrUpdateAuthorCommand(
+                        UUID.fromString("f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e"),
+                        "Ursula K. Le Guin"
+                )
         );
 
         Book book = bookService.createOrUpdateBook(
-            new CreateOrUpdateBookCommand(
-                "d8d387ac-0b36-4d33-b6d2-9f1a4591ec35",
-                "A Wizard of Earthsea",
-                205,
-                Set.of(author.id())
-            )
+                new CreateOrUpdateBookCommand(
+                        UUID.fromString("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35"),
+                        "A Wizard of Earthsea",
+                        205,
+                        Set.of(author.id())
+                )
         );
 
         String mutation = """

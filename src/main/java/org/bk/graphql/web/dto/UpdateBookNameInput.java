@@ -1,4 +1,6 @@
 package org.bk.graphql.web.dto;
 
-public record UpdateBookNameInput(String id, String name, int version) {
+import java.util.UUID;
+
+public record UpdateBookNameInput(UUID id, String name, int version) {
 }

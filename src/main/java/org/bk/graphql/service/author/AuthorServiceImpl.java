@@ -35,7 +35,7 @@ public class AuthorServiceImpl implements AuthorService {
     public Author createAuthor(CreateAuthorCommand command) {
         Instant now = clock.instant();
         AuthorEntity author = new AuthorEntity(
-                uuids.generateUuid().toString(),
+                uuids.generateUuid(),
                 command.name(),
                 now,
                 now,
@@ -94,7 +94,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Author getAuthor(ById<AuthorId> query) {
         return authorRepository
-                .findById(query.id().toString())
+                .findById(query.id().id())
                 .orElseThrow(() -> new DomainException("Author not found"))
                 .toModel();
     }
@@ -102,7 +102,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public List<Author> getAuthors(ByIds<AuthorId> query) {
         return authorRepository
-                .findAllByIdIn(query.ids().stream().map(id -> id.id().toString()).collect(Collectors.toSet()))
+                .findAllByIdIn(query.ids().stream().map(AuthorId::id).collect(Collectors.toSet()))
                 .stream().map(AuthorEntity::toModel)
                 .toList();
     }

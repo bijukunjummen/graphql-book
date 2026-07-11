@@ -1,7 +1,9 @@
 package org.bk.graphql.service.author;
 
-public record CreateOrUpdateAuthorCommand(String id, String name, int version) {
-    public CreateOrUpdateAuthorCommand(String id, String name) {
+import java.util.UUID;
+
+public record CreateOrUpdateAuthorCommand(UUID id, String name, int version) {
+    public CreateOrUpdateAuthorCommand(UUID id, String name) {
         this(id, name, 0);
     }
 }

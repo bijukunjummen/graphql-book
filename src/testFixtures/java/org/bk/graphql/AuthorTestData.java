@@ -7,7 +7,7 @@ import org.bk.graphql.domain.ImmutableAuthor;
 import java.util.UUID;
 
 public final class AuthorTestData {
-    public static final AuthorId AUTHOR_ID_1 = new AuthorId(UUID.fromString("1259a393-f387-4900-a807-9519515c2b1e"));
+    public static final AuthorId AUTHOR_ID_1 = AuthorId.of(UUID.fromString("1259a393-f387-4900-a807-9519515c2b1e"));
     public static final String AUTHOR_NAME_1 = "John Doe";
     public static Author sampleAuthor_1() {
         return ImmutableAuthor.builder()

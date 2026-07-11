@@ -1,6 +1,8 @@
 package org.bk.graphql.repository;
 
 import org.bk.graphql.AuthorTestData;
+import org.bk.graphql.BookAuthorLinkTestData;
+import org.bk.graphql.BookTestData;
 import org.bk.graphql.entity.AuthorEntity;
 import org.bk.graphql.entity.BookAuthorLinkEntity;
 import org.bk.graphql.entity.BookEntity;
@@ -18,6 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.bk.graphql.TimeTestData.DEFAULT_CREATED_DATE;
@@ -38,20 +42,13 @@ class BookRepositoryITest {
 
     @Test
     void test_crudOperations_withBookAndAuthor_returnsSavedBook() {
-        AuthorEntity author = new AuthorEntity("author-id", "first last", DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 0);
+        AuthorEntity author = AuthorEntity.fromModel(AuthorTestData.sampleAuthor_1());
         authorRepository.save(author);
 
-        BookEntity book = new BookEntity(
-                "id",
-                "name",
-                100,
-                DEFAULT_CREATED_DATE,
-                DEFAULT_UPDATED_DATE,
-                0
-        );
+        BookEntity book = BookEntity.fromModel(BookTestData.sampleBook());
         bookRepository.save(book);
-        bookAuthorLinkRepository.save(new BookAuthorLinkEntity("link-id", book.id(), author.id(), DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE));
-        assertThat(bookRepository.findById(book.id()).orElseThrow().name()).isEqualTo("name");
+        bookAuthorLinkRepository.save(BookAuthorLinkEntity.fromModel(BookAuthorLinkTestData.sampleBookAuthorLink()));
+        assertThat(bookRepository.findById(book.id()).orElseThrow().name()).isEqualTo(book.name());
     }
 
     @Test
@@ -60,9 +57,9 @@ class BookRepositoryITest {
         AuthorEntity savedAuthor = authorRepository.save(author1);
 
         for (int i = 0; i < 10; i++) {
-            BookEntity book = new BookEntity("id-" + i, "name-" + i, 100, DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 0);
+            BookEntity book = new BookEntity(UUID.randomUUID(), "name-" + i, 100, DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 0);
             bookRepository.save(book);
-            bookAuthorLinkRepository.save(new BookAuthorLinkEntity("link-id-" + i, book.id(), savedAuthor.id(), DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE));
+            bookAuthorLinkRepository.save(new BookAuthorLinkEntity(UUID.randomUUID(), book.id(), savedAuthor.id(), DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE));
         }
 
         Pageable page1 = PageRequest.of(0, 2);

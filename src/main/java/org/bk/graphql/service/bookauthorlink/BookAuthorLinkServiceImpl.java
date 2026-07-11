@@ -16,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BookAuthorLinkServiceImpl implements BookAuthorLinkService {
@@ -36,20 +38,21 @@ public class BookAuthorLinkServiceImpl implements BookAuthorLinkService {
     @Transactional
     @Override
     public void replaceAuthorsForBook(BookId bookId, Set<AuthorId> authorIds) {
-        String bookIdValue = bookId.id().toString();
+        Set<UUID> newAuthorIds = authorIds.stream().map(AuthorId::id).collect(Collectors.toSet());
+        UUID bookIdValue = bookId.id();
 
         List<BookAuthorLinkEntity> bookAuthorEntities = bookAuthorLinkRepository.findAllByBookIdIn(Set.of(bookIdValue));
-        List<String> existingAuthorIds = bookAuthorEntities.stream()
-                .map(e -> e.authorId())
+        List<UUID> existingAuthorIds = bookAuthorEntities.stream()
+                .map(BookAuthorLinkEntity::authorId)
                 .toList();
         List<BookAuthorLinkEntity> toDelete = bookAuthorEntities.stream()
-                .filter(e -> !authorIds.contains(e.authorId()))
+                .filter(e -> !newAuthorIds.contains(e.authorId()))
                 .toList();
         Instant now = clock.instant();
         List<BookAuthorLinkEntity> toAdd = authorIds
                 .stream()
-                .filter(authorId -> !existingAuthorIds.contains(authorId.toString()))
-                .map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid().toString(), bookIdValue, authorId.id().toString(), now, now))
+                .filter(authorId -> !existingAuthorIds.contains(authorId.id()))
+                .map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid(), bookIdValue, authorId.id(), now, now))
                 .toList();
         bookAuthorLinkRepository.deleteAll(toDelete);
         bookAuthorLinkRepository.upsertAll(toAdd);
@@ -57,16 +60,16 @@ public class BookAuthorLinkServiceImpl implements BookAuthorLinkService {
 
     @Override
     public Map<BookId, List<AuthorId>> getAuthorIdsForBooks(ByIds<BookId> query) {
-        Set<String> bookIdValues = query.ids().stream()
-                .map(bookId -> bookId.id().toString())
-                .collect(java.util.stream.Collectors.toSet());
+        Set<UUID> bookIdValues = query.ids().stream()
+                .map(BookId::id)
+                .collect(Collectors.toSet());
 
         List<BookAuthorLinkEntity> links = bookAuthorLinkRepository.findAllByBookIdIn(bookIdValues);
         Map<BookId, List<AuthorId>> authorIdsByBookId = new LinkedHashMap<>();
         for (BookAuthorLinkEntity link : links) {
-            BookId bookId = BookId.parse(link.bookId());
-            List<AuthorId> authorIds = authorIdsByBookId.computeIfAbsent(bookId, unused -> new ArrayList<>());
-            authorIds.add(AuthorId.parse(link.authorId()));
+            BookId bookId = BookId.of(link.bookId());
+            List<AuthorId> authorIds = authorIdsByBookId.computeIfAbsent(bookId, _ -> new ArrayList<>());
+            authorIds.add(AuthorId.of(link.authorId()));
         }
         return authorIdsByBookId;
     }

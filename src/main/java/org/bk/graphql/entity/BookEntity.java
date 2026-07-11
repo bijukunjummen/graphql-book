@@ -8,19 +8,24 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Table("books")
 public record BookEntity(
-        @Id String id,
+        @Id UUID id,
         String name,
         int pageCount,
         Instant createdAt,
         Instant updatedAt,
         @Version int version
 ) {
+    public static BookEntity fromModel(Book book) {
+        return new BookEntity(book.id().id(), book.name(), book.pageCount(), book.createdAt(), book.updatedAt(), book.version());
+    }
+
     public Book toModel() {
         return ImmutableBook.builder()
-                .id(BookId.parse(id))
+                .id(BookId.of(id))
                 .name(name)
                 .pageCount(pageCount)
                 .createdAt(createdAt)
