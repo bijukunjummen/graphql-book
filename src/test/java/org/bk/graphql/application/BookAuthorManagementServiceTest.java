@@ -1,14 +1,15 @@
 package org.bk.graphql.application;
 
 import org.bk.graphql.TimeTestData;
-import org.bk.graphql.application.port.out.AuthorStore;
-import org.bk.graphql.application.port.out.BookAuthorLinkStore;
 import org.bk.graphql.common.query.ByIds;
 import org.bk.graphql.domain.Author;
 import org.bk.graphql.domain.AuthorId;
 import org.bk.graphql.domain.BookId;
+import org.bk.graphql.service.author.AuthorService;
+import org.bk.graphql.service.bookauthorlink.BookAuthorLinkService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,10 +30,10 @@ class BookAuthorManagementServiceTest {
     private BookAuthorManagementServiceImpl bookAuthorManagementService;
 
     @Mock
-    private BookAuthorLinkStore bookAuthorLinkStore;
+    private BookAuthorLinkService bookAuthorLinkService;
 
     @Mock
-    private AuthorStore authorStore;
+    private AuthorService authorService;
 
     @Test
     void test_getAuthorsForBooks_whenNoAuthorLinks_returnsEmptyListsAndSkipsAuthorFetch() {
@@ -39,14 +41,14 @@ class BookAuthorManagementServiceTest {
         BookId secondBookId = BookId.parse("c22ee984-7f74-4158-8bd5-79235b0ad051");
         ByIds<BookId> query = new ByIds<>(List.of(firstBookId, secondBookId));
 
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(query.ids())).thenReturn(Map.of());
+        when(bookAuthorLinkService.getAuthorIdsForBooks(query)).thenReturn(Map.of());
 
         Map<BookId, List<Author>> result = bookAuthorManagementService.getAuthorsForBooks(query);
 
         assertThat(result)
                 .containsEntry(firstBookId, List.of())
                 .containsEntry(secondBookId, List.of());
-        verify(authorStore, never()).findAllByIds(org.mockito.ArgumentMatchers.<List<AuthorId>>any());
+        verify(authorService, never()).getAuthors(ArgumentMatchers.<ByIds<AuthorId>>any());
     }
 
     @Test
@@ -62,11 +64,11 @@ class BookAuthorManagementServiceTest {
         Author secondAuthor = Author.create(secondAuthorId, "Aldous Huxley",
                 TimeTestData.DEFAULT_CREATED_DATE, TimeTestData.DEFAULT_UPDATED_DATE, 1);
 
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(query.ids())).thenReturn(Map.of(
+        when(bookAuthorLinkService.getAuthorIdsForBooks(query)).thenReturn(Map.of(
                 firstBookId, List.of(firstAuthorId),
                 secondBookId, List.of(secondAuthorId)
         ));
-        when(authorStore.findAllByIds(org.mockito.ArgumentMatchers.<List<AuthorId>>any()))
+        when(authorService.getAuthors(ArgumentMatchers.<ByIds<AuthorId>>any()))
                 .thenReturn(List.of(firstAuthor, secondAuthor));
 
         Map<BookId, List<Author>> result = bookAuthorManagementService.getAuthorsForBooks(query);
@@ -74,8 +76,8 @@ class BookAuthorManagementServiceTest {
         assertThat(result)
                 .containsEntry(firstBookId, List.of(firstAuthor))
                 .containsEntry(secondBookId, List.of(secondAuthor));
-        verify(authorStore).findAllByIds(org.mockito.ArgumentMatchers.<List<AuthorId>>assertArg(ids ->
-                assertThat(ids).containsExactlyInAnyOrder(firstAuthorId, secondAuthorId)));
+        verify(authorService).getAuthors(assertArg((ByIds<AuthorId> ids) ->
+                assertThat(ids.ids()).containsExactlyInAnyOrder(firstAuthorId, secondAuthorId)));
     }
 
     @Test
@@ -88,10 +90,10 @@ class BookAuthorManagementServiceTest {
         Author knownAuthor = Author.create(knownAuthorId, "George Orwell",
                 TimeTestData.DEFAULT_CREATED_DATE, TimeTestData.DEFAULT_UPDATED_DATE, 1);
 
-        when(bookAuthorLinkStore.findAuthorIdsByBookIds(query.ids())).thenReturn(Map.of(
+        when(bookAuthorLinkService.getAuthorIdsForBooks(query)).thenReturn(Map.of(
                 bookId, List.of(knownAuthorId, missingAuthorId)
         ));
-        when(authorStore.findAllByIds(org.mockito.ArgumentMatchers.<List<AuthorId>>any()))
+        when(authorService.getAuthors(ArgumentMatchers.<ByIds<AuthorId>>any()))
                 .thenReturn(List.of(knownAuthor));
 
         Map<BookId, List<Author>> result = bookAuthorManagementService.getAuthorsForBooks(query);
