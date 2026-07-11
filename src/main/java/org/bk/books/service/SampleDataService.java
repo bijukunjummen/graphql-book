@@ -4,13 +4,12 @@ import org.bk.books.domain.Author;
 import org.bk.books.domain.AuthorId;
 import org.bk.books.domain.BookId;
 import org.bk.books.service.author.AuthorService;
-import org.bk.books.service.author.CreateOrUpdateAuthorCommand;
+import org.bk.books.service.author.AuthorServiceCommands.CreateOrUpdateAuthorCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
 import org.bk.books.service.book.BookService;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class SampleDataService {

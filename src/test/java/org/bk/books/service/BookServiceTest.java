@@ -169,7 +169,7 @@ class BookServiceTest {
         when(bookStore.findById(bookId)).thenReturn(Optional.of(existingBook));
         when(bookStore.save(any(Book.class))).thenReturn(savedBook);
 
-        Book book = bookService.updateBook(new UpdateBookCommand(bookId, "The Tombs of Atuan", 180, Set.of(authorId), 2));
+        Book book = bookService.updateBook(new UpdateBookCommand(bookId, "The Tombs of Atuan", 180, List.of(authorId), 2));
 
         assertBook(book, bookId, "The Tombs of Atuan", 180, 2, authorId);
         verify(bookStore).save(assertArg(savedBookEntity -> assertSoftly(softly -> {
@@ -186,7 +186,7 @@ class BookServiceTest {
         BookId bookId = BookId.parse("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35");
         when(bookStore.findById(bookId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> bookService.updateBook(new UpdateBookCommand(bookId, "The Tombs of Atuan", 180, Set.of(), 2)))
+        assertThatThrownBy(() -> bookService.updateBook(new UpdateBookCommand(bookId, "The Tombs of Atuan", 180, List.of(), 2)))
                 .isInstanceOf(DomainException.class)
                 .hasMessage("Book not found");
 
@@ -243,7 +243,7 @@ class BookServiceTest {
         assertThat(page.getContent())
                 .singleElement()
                 .satisfies(book -> assertBook(book, bookId, "1984", 328, 1, authorId));
-        verify(bookStore).findAll(ArgumentMatchers.<Pageable>assertArg(pageable -> assertSoftly(softly -> {
+        verify(bookStore).findAll(ArgumentMatchers.assertArg(pageable -> assertSoftly(softly -> {
             softly.assertThat(pageable.getPageNumber()).isEqualTo(2);
             softly.assertThat(pageable.getPageSize()).isEqualTo(5);
             softly.assertThat(pageable.getOffset()).isEqualTo(10);

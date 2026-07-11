@@ -3,8 +3,8 @@ package org.bk.books.service.book;
 import org.bk.books.domain.AuthorId;
 import org.bk.books.domain.BookId;
 
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 public interface BookCommands {
     record CreateBookCommand(String name, int pageCount, Set<AuthorId> authors) {
@@ -14,9 +14,9 @@ public interface BookCommands {
             this(id, name, pageCount, authors, 0);
         }
     }
-    record UpdateBookCommand(BookId id, String name, int pageCount, Set<AuthorId> authors, int version) {
+    record UpdateBookCommand(BookId id, String name, int pageCount, List<AuthorId> authors, int version) {
     }
     record UpdateBookNameCommand(BookId id, String name, int version) {
     }
-    record UpdateAuthorsCommand(BookId id, Set<AuthorId> authors) {}
+    record UpdateBookAuthorsCommand(BookId id, List<AuthorId> authorIds) {}
 }

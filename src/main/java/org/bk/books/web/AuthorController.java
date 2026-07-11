@@ -1,11 +1,11 @@
 package org.bk.books.web;
 
+import org.bk.books.common.query.ById;
 import org.bk.books.domain.Author;
 import org.bk.books.domain.AuthorId;
 import org.bk.books.service.author.AuthorService;
-import org.bk.books.common.query.ById;
-import org.bk.books.service.author.CreateAuthorCommand;
-import org.bk.books.service.author.UpdateAuthorNameCommand;
+import org.bk.books.service.author.AuthorServiceCommands.CreateAuthorCommand;
+import org.bk.books.service.author.AuthorServiceCommands.UpdateAuthorNameCommand;
 import org.bk.books.web.dto.AuthorDto;
 import org.bk.books.web.dto.CreateAuthorInput;
 import org.bk.books.web.dto.CreateAuthorPayload;

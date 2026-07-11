@@ -4,7 +4,7 @@ import org.bk.books.domain.AuthorId;
 import org.bk.books.domain.Book;
 import org.bk.books.domain.BookId;
 import org.bk.books.service.author.AuthorService;
-import org.bk.books.service.author.CreateOrUpdateAuthorCommand;
+import org.bk.books.service.author.AuthorServiceCommands.CreateOrUpdateAuthorCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
 import org.bk.books.service.book.BookService;
 import org.bk.books.web.dto.CreateAuthorInput;
@@ -22,7 +22,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Set;
-import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
