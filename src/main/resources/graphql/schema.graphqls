@@ -10,6 +10,7 @@ type Mutation {
     updateAuthorName(input: UpdateAuthorNameInput): UpdateAuthorNamePayload
     createBook(input: CreateBookInput): CreateBookPayload
     updateBookName(input: UpdateBookNameInput): UpdateBookNamePayload
+    updateBookAuthors(input: UpdateBookAuthorsInput): UpdateBookAuthorsPayload
     loadSampleData: LoadSampleDataPayload
 }
 
@@ -44,6 +45,16 @@ input UpdateAuthorNameInput {
 
 type UpdateAuthorNamePayload {
     updatedAuthor: Author
+}
+
+input UpdateBookAuthorsInput {
+    id: ID!
+    authors: [ID!]
+    version: Int!
+}
+
+type UpdateBookAuthorsPayload {
+    updatedBook: Book
 }
 
 input CreateBookInput {

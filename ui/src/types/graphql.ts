@@ -69,6 +69,12 @@ export interface UpdateBookNameInput {
   version: number;
 }
 
+export interface UpdateBookAuthorsInput {
+  id: string;
+  authors: string[];
+  version: number;
+}
+
 export interface CreateAuthorPayload {
   createdAuthor?: Author | null;
 }
@@ -83,6 +89,10 @@ export interface CreateBookPayload {
 
 export interface UpdateBookNamePayload {
   book?: Book | null;
+}
+
+export interface UpdateBookAuthorsPayload {
+  updatedBook?: Book | null;
 }
 
 export interface LoadSampleDataPayload {

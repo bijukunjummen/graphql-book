@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class UuidsConfig {
-    @Bean
-    public Uuids uuids() {
-        return Uuids.systemUuid();
-    }
+  @Bean
+  public Uuids uuids() {
+    return Uuids.systemUuid();
+  }
 }

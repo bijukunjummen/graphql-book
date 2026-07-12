@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DataLoadersConfig {
 
-    @Bean
-    public BookAuthorsDataLoader bookAuthorsDataLoader(BookAuthorManagementService bookAuthorManagementService) {
-        return new BookAuthorsDataLoader(bookAuthorManagementService);
-    }
+  @Bean
+  public BookAuthorsDataLoader bookAuthorsDataLoader(
+      BookAuthorManagementService bookAuthorManagementService) {
+    return new BookAuthorsDataLoader(bookAuthorManagementService);
+  }
 }
-

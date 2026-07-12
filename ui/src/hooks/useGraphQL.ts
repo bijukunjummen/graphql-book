@@ -6,7 +6,8 @@ import {
   UPDATE_AUTHOR_NAME, 
   CREATE_BOOK, 
   UPDATE_BOOK_NAME,
-  LOAD_SAMPLE_DATA
+  LOAD_SAMPLE_DATA,
+  UPDATE_BOOK_AUTHORS
 } from '../graphql/operations';
 import type { 
   Author, 
@@ -18,7 +19,8 @@ import type {
   CreateBookInput,
   UpdateBookNameInput,
   LoadSampleDataPayload,
-  SortInput
+  SortInput,
+  UpdateBookAuthorsInput
 } from '../types/graphql';
 
 const NAME_ASC: SortInput[] = [{ field: 'name', order: 'ASC' }];
@@ -49,6 +51,10 @@ export const useCreateBook = () => {
 
 export const useUpdateBookName = () => {
   return useMutation<{ updateBookName: { book?: Book | null } }, { input: UpdateBookNameInput }>(UPDATE_BOOK_NAME);
+};
+
+export const useUpdateBookAuthors = () => {
+  return useMutation<{ updateBookAuthors: { updatedBook?: Book | null } }, { input: UpdateBookAuthorsInput}>(UPDATE_BOOK_AUTHORS);
 };
 
 export const useLoadSampleData = () => {

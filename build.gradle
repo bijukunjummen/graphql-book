@@ -5,6 +5,7 @@ plugins {
 	id("java-test-fixtures")
 	id 'checkstyle'
 	id 'pmd'
+	id 'com.diffplug.spotless' version '8.8.0'
 }
 
 ext {
@@ -94,4 +95,14 @@ tasks.named('pmdTest') {
 
 tasks.named('pmdTestFixtures') {
 	enabled = false
+}
+
+spotless {
+	java {
+		target 'src/*/java/**/*.java'
+		googleJavaFormat()
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
 }

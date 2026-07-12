@@ -140,6 +140,18 @@ export const UPDATE_BOOK_NAME = gql`
   }
 `;
 
+export const UPDATE_BOOK_AUTHORS = gql`
+  mutation UpdateBookAuthors($input: UpdateBookAuthorsInput!) {
+    updateBookAuthors(input: $input) {
+      updatedBook {
+        id
+        name
+        version
+      }
+    }
+  }
+`;
+
 export const LOAD_SAMPLE_DATA = gql`
   mutation LoadSampleData {
     loadSampleData {

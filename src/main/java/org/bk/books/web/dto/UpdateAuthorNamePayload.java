@@ -1,5 +1,3 @@
 package org.bk.books.web.dto;
 
-public record UpdateAuthorNamePayload(AuthorDto updatedAuthor) {
-}
-
+public record UpdateAuthorNamePayload(AuthorDto updatedAuthor) {}
