@@ -23,38 +23,36 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class AuthorController {
-  private final AuthorService authorService;
-  private final ConnectionPageSupport pagination;
+    private final AuthorService authorService;
+    private final ConnectionPageSupport pagination;
 
-  public AuthorController(AuthorService authorService, ConnectionPageSupport pagination) {
-    this.authorService = authorService;
-    this.pagination = pagination;
-  }
+    public AuthorController(AuthorService authorService, ConnectionPageSupport pagination) {
+        this.authorService = authorService;
+        this.pagination = pagination;
+    }
 
-  @QueryMapping
-  public AuthorDto findAuthorById(@Argument AuthorId id) {
-    return AuthorDto.map(authorService.getAuthor(new ById<>(id)));
-  }
+    @QueryMapping
+    public AuthorDto findAuthorById(@Argument AuthorId id) {
+        return AuthorDto.map(authorService.getAuthor(new ById<>(id)));
+    }
 
-  @MutationMapping
-  public CreateAuthorPayload createAuthor(@Argument CreateAuthorInput input) {
-    Author createdAuthor = authorService.createAuthor(new CreateAuthorCommand(input.name()));
-    return new CreateAuthorPayload(AuthorDto.map(createdAuthor));
-  }
+    @MutationMapping
+    public CreateAuthorPayload createAuthor(@Argument CreateAuthorInput input) {
+        Author createdAuthor = authorService.createAuthor(new CreateAuthorCommand(input.name()));
+        return new CreateAuthorPayload(AuthorDto.map(createdAuthor));
+    }
 
-  @MutationMapping
-  public UpdateAuthorNamePayload updateAuthorName(@Argument UpdateAuthorNameInput input) {
-    Author updatedAuthor =
-        authorService.updateAuthorName(
-            new UpdateAuthorNameCommand(AuthorId.parse(input.id()), input.name(), input.version()));
-    return new UpdateAuthorNamePayload(AuthorDto.map(updatedAuthor));
-  }
+    @MutationMapping
+    public UpdateAuthorNamePayload updateAuthorName(@Argument UpdateAuthorNameInput input) {
+        Author updatedAuthor = authorService.updateAuthorName(
+                new UpdateAuthorNameCommand(AuthorId.parse(input.id()), input.name(), input.version()));
+        return new UpdateAuthorNamePayload(AuthorDto.map(updatedAuthor));
+    }
 
-  @QueryMapping
-  public Page<AuthorDto> findAuthors(ScrollSubrange subrange, @Argument List<SortInput> sort) {
-    Page<AuthorDto> page =
-        pagination.page(
-            subrange, sort, pageable -> authorService.getAuthors(pageable), AuthorDto::map);
-    return page;
-  }
+    @QueryMapping
+    public Page<AuthorDto> findAuthors(ScrollSubrange subrange, @Argument List<SortInput> sort) {
+        Page<AuthorDto> page =
+                pagination.page(subrange, sort, pageable -> authorService.getAuthors(pageable), AuthorDto::map);
+        return page;
+    }
 }

@@ -14,34 +14,32 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BookAuthorManagementServiceImpl implements BookAuthorManagementService {
-  private final BookService bookService;
-  private final AuthorService authorService;
+    private final BookService bookService;
+    private final AuthorService authorService;
 
-  public BookAuthorManagementServiceImpl(BookService bookService, AuthorService authorService) {
-    this.bookService = bookService;
-    this.authorService = authorService;
-  }
-
-  @Override
-  public Map<BookId, List<Author>> getAuthorsForBooks(ByIds<BookId> ids) {
-    Map<BookId, List<AuthorId>> authorIdsForBooks = bookService.getAuthorIdsForBooks(ids);
-    List<AuthorId> authorIds =
-        authorIdsForBooks.values().stream().flatMap(List::stream).distinct().toList();
-    if (authorIds.isEmpty()) {
-      return ids.ids().stream().collect(Collectors.toMap(bookId -> bookId, bookId -> List.of()));
+    public BookAuthorManagementServiceImpl(BookService bookService, AuthorService authorService) {
+        this.bookService = bookService;
+        this.authorService = authorService;
     }
-    List<Author> authorsFromDb = authorService.getAuthors(new ByIds<>(authorIds));
-    Map<AuthorId, Author> authorsById =
-        authorsFromDb.stream().collect(Collectors.toMap(Author::id, a -> a));
 
-    return ids.ids().stream()
-        .collect(
-            Collectors.toMap(
-                bookId -> bookId,
-                bookId ->
-                    authorIdsForBooks.getOrDefault(bookId, List.of()).stream()
-                        .map(authorsById::get)
-                        .filter(Objects::nonNull)
-                        .toList()));
-  }
+    @Override
+    public Map<BookId, List<Author>> getAuthorsForBooks(ByIds<BookId> ids) {
+        Map<BookId, List<AuthorId>> authorIdsForBooks = bookService.getAuthorIdsForBooks(ids);
+        List<AuthorId> authorIds = authorIdsForBooks.values().stream()
+                .flatMap(List::stream)
+                .distinct()
+                .toList();
+        if (authorIds.isEmpty()) {
+            return ids.ids().stream().collect(Collectors.toMap(bookId -> bookId, bookId -> List.of()));
+        }
+        List<Author> authorsFromDb = authorService.getAuthors(new ByIds<>(authorIds));
+        Map<AuthorId, Author> authorsById = authorsFromDb.stream().collect(Collectors.toMap(Author::id, a -> a));
+
+        return ids.ids().stream()
+                .collect(Collectors.toMap(
+                        bookId -> bookId, bookId -> authorIdsForBooks.getOrDefault(bookId, List.of()).stream()
+                                .map(authorsById::get)
+                                .filter(Objects::nonNull)
+                                .toList()));
+    }
 }

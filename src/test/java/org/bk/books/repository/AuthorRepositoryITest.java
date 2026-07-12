@@ -21,35 +21,28 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class AuthorRepositoryITest {
 
-  @Autowired private AuthorRepository authorRepository;
+    @Autowired
+    private AuthorRepository authorRepository;
 
-  private Clock clock = TimeTestData.FIXED_CLOCK;
+    private Clock clock = TimeTestData.FIXED_CLOCK;
 
-  @Test
-  void test_authorRepositoryCrudOperations_withAuthor_returnsSavedUpdatedAndPagedAuthor() {
-    AuthorEntity author = AuthorEntity.fromModel(AuthorTestData.sampleAuthor_1());
-    authorRepository.save(author);
-    assertThat(authorRepository.findById(author.id()))
-        .hasValue(
-            new AuthorEntity(
-                author.id(), author.name(), author.createdAt(), author.updatedAt(), 1));
-    AuthorEntity updatedAuthor =
-        new AuthorEntity(
-            author.id(), "firstUpdated last", author.createdAt(), author.updatedAt(), 1);
-    authorRepository.save(updatedAuthor);
-    assertThat(authorRepository.findById(author.id()))
-        .hasValue(
-            new AuthorEntity(
-                author.id(),
-                "firstUpdated last",
-                updatedAuthor.createdAt(),
-                updatedAuthor.updatedAt(),
-                2));
-    Page<AuthorEntity> page = authorRepository.findAll(Pageable.ofSize(5));
-    assertThat(page.getTotalElements()).isEqualTo(1);
-  }
+    @Test
+    void test_authorRepositoryCrudOperations_withAuthor_returnsSavedUpdatedAndPagedAuthor() {
+        AuthorEntity author = AuthorEntity.fromModel(AuthorTestData.sampleAuthor_1());
+        authorRepository.save(author);
+        assertThat(authorRepository.findById(author.id()))
+                .hasValue(new AuthorEntity(author.id(), author.name(), author.createdAt(), author.updatedAt(), 1));
+        AuthorEntity updatedAuthor =
+                new AuthorEntity(author.id(), "firstUpdated last", author.createdAt(), author.updatedAt(), 1);
+        authorRepository.save(updatedAuthor);
+        assertThat(authorRepository.findById(author.id()))
+                .hasValue(new AuthorEntity(
+                        author.id(), "firstUpdated last", updatedAuthor.createdAt(), updatedAuthor.updatedAt(), 2));
+        Page<AuthorEntity> page = authorRepository.findAll(Pageable.ofSize(5));
+        assertThat(page.getTotalElements()).isEqualTo(1);
+    }
 
-  @ServiceConnection @Container
-  private static final PostgreSQLContainer<?> postgresContainer =
-      new PostgreSQLContainer<>("postgres:16-alpine");
+    @ServiceConnection
+    @Container
+    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:16-alpine");
 }

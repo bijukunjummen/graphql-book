@@ -18,23 +18,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface BookService {
-  Book createBook(CreateBookCommand command);
+    Book createBook(CreateBookCommand command);
 
-  Book createOrUpdateBook(CreateOrUpdateBookCommand command);
+    Book createOrUpdateBook(CreateOrUpdateBookCommand command);
 
-  Book updateBook(UpdateBookCommand command);
+    Book updateBook(UpdateBookCommand command);
 
-  Book updateBookName(UpdateBookNameCommand command);
+    Book updateBookName(UpdateBookNameCommand command);
 
-  Book updateBookAuthors(UpdateBookAuthorsCommand command);
+    Book updateBookAuthors(UpdateBookAuthorsCommand command);
 
-  Page<Book> getBooks(GetBooksQuery query);
+    Page<Book> getBooks(GetBooksQuery query);
 
-  Page<Book> getBooks(Pageable pageable);
+    Page<Book> getBooks(Pageable pageable);
 
-  Optional<Book> getBook(ById<BookId> query);
+    Optional<Book> getBook(ById<BookId> query);
 
-  List<Book> getBooks(ByIds<BookId> query);
+    List<Book> getBooks(ByIds<BookId> query);
 
-  Map<BookId, List<AuthorId>> getAuthorIdsForBooks(ByIds<BookId> query);
+    Map<BookId, List<AuthorId>> getAuthorIdsForBooks(ByIds<BookId> query);
 }

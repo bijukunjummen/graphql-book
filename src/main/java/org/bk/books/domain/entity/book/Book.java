@@ -9,36 +9,36 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 public interface Book {
-  static Book create(
-      BookId id,
-      String name,
-      List<AuthorId> authors,
-      int pageCount,
-      Instant createdAt,
-      Instant updatedAt,
-      int version) {
-    return ImmutableBook.builder()
-        .id(id)
-        .name(BookName.of(name).value())
-        .authors(authors.stream().distinct().toList())
-        .pageCount(PageCount.of(pageCount).value())
-        .createdAt(createdAt)
-        .updatedAt(updatedAt)
-        .version(version)
-        .build();
-  }
+    static Book create(
+            BookId id,
+            String name,
+            List<AuthorId> authors,
+            int pageCount,
+            Instant createdAt,
+            Instant updatedAt,
+            int version) {
+        return ImmutableBook.builder()
+                .id(id)
+                .name(BookName.of(name).value())
+                .authors(authors.stream().distinct().toList())
+                .pageCount(PageCount.of(pageCount).value())
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .version(version)
+                .build();
+    }
 
-  BookId id();
+    BookId id();
 
-  String name();
+    String name();
 
-  List<AuthorId> authors();
+    List<AuthorId> authors();
 
-  int pageCount();
+    int pageCount();
 
-  Instant createdAt();
+    Instant createdAt();
 
-  Instant updatedAt();
+    Instant updatedAt();
 
-  int version();
+    int version();
 }

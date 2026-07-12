@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AuthorRepository
-    extends CrudRepository<AuthorEntity, UUID>, PagingAndSortingRepository<AuthorEntity, UUID> {
-  List<AuthorEntity> findAllByIdIn(Collection<UUID> authorIds);
+        extends CrudRepository<AuthorEntity, UUID>, PagingAndSortingRepository<AuthorEntity, UUID> {
+    List<AuthorEntity> findAllByIdIn(Collection<UUID> authorIds);
 }

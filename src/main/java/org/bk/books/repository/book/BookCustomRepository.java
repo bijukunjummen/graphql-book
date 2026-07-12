@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 
 @SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface BookCustomRepository {
-  Page<BookEntity> getRankedBooks(Pageable pageable);
+    Page<BookEntity> getRankedBooks(Pageable pageable);
 }

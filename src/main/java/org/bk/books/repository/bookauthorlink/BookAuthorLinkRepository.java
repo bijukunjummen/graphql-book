@@ -7,10 +7,10 @@ import org.bk.books.entity.BookAuthorLinkEntity;
 import org.springframework.data.repository.CrudRepository;
 
 public interface BookAuthorLinkRepository
-    extends BookAuthorLinkCustomRepository, CrudRepository<BookAuthorLinkEntity, UUID> {
-  List<BookAuthorLinkEntity> findAllByBookIdIn(Set<UUID> bookIds);
+        extends BookAuthorLinkCustomRepository, CrudRepository<BookAuthorLinkEntity, UUID> {
+    List<BookAuthorLinkEntity> findAllByBookIdIn(Set<UUID> bookIds);
 
-  void deleteByBookId(UUID bookId);
+    void deleteByBookId(UUID bookId);
 
-  void deleteByBookIdAndAuthorIdNotIn(UUID bookId, Set<UUID> authorIds);
+    void deleteByBookIdAndAuthorIdNotIn(UUID bookId, Set<UUID> authorIds);
 }

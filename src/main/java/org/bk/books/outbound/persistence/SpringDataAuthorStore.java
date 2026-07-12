@@ -16,30 +16,32 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SpringDataAuthorStore implements AuthorStore {
-  private final AuthorRepository authorRepository;
+    private final AuthorRepository authorRepository;
 
-  public SpringDataAuthorStore(AuthorRepository authorRepository) {
-    this.authorRepository = authorRepository;
-  }
+    public SpringDataAuthorStore(AuthorRepository authorRepository) {
+        this.authorRepository = authorRepository;
+    }
 
-  @Override
-  public Author save(Author author) {
-    return authorRepository.save(AuthorEntity.fromModel(author)).toModel();
-  }
+    @Override
+    public Author save(Author author) {
+        return authorRepository.save(AuthorEntity.fromModel(author)).toModel();
+    }
 
-  @Override
-  public Optional<Author> findById(AuthorId id) {
-    return authorRepository.findById(id.id()).map(AuthorEntity::toModel);
-  }
+    @Override
+    public Optional<Author> findById(AuthorId id) {
+        return authorRepository.findById(id.id()).map(AuthorEntity::toModel);
+    }
 
-  @Override
-  public List<Author> findAllByIds(Collection<AuthorId> ids) {
-    Set<java.util.UUID> authorIds = ids.stream().map(AuthorId::id).collect(Collectors.toSet());
-    return authorRepository.findAllByIdIn(authorIds).stream().map(AuthorEntity::toModel).toList();
-  }
+    @Override
+    public List<Author> findAllByIds(Collection<AuthorId> ids) {
+        Set<java.util.UUID> authorIds = ids.stream().map(AuthorId::id).collect(Collectors.toSet());
+        return authorRepository.findAllByIdIn(authorIds).stream()
+                .map(AuthorEntity::toModel)
+                .toList();
+    }
 
-  @Override
-  public Page<Author> findAll(Pageable pageable) {
-    return authorRepository.findAll(pageable).map(AuthorEntity::toModel);
-  }
+    @Override
+    public Page<Author> findAll(Pageable pageable) {
+        return authorRepository.findAll(pageable).map(AuthorEntity::toModel);
+    }
 }

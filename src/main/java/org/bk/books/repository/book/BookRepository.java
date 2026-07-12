@@ -8,6 +8,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookRepository
-    extends CrudRepository<BookEntity, UUID>,
-        PagingAndSortingRepository<BookEntity, UUID>,
-        BookCustomRepository {}
+        extends CrudRepository<BookEntity, UUID>, PagingAndSortingRepository<BookEntity, UUID>, BookCustomRepository {}

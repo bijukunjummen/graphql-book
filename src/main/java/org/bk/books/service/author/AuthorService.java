@@ -12,15 +12,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface AuthorService {
-  Author createAuthor(CreateAuthorCommand createAuthorCommand);
+    Author createAuthor(CreateAuthorCommand createAuthorCommand);
 
-  Author createOrUpdateAuthor(CreateOrUpdateAuthorCommand createOrUpdateAuthorCommand);
+    Author createOrUpdateAuthor(CreateOrUpdateAuthorCommand createOrUpdateAuthorCommand);
 
-  Author updateAuthorName(UpdateAuthorNameCommand command);
+    Author updateAuthorName(UpdateAuthorNameCommand command);
 
-  Author getAuthor(ById<AuthorId> query);
+    Author getAuthor(ById<AuthorId> query);
 
-  List<Author> getAuthors(ByIds<AuthorId> query);
+    List<Author> getAuthors(ByIds<AuthorId> query);
 
-  Page<Author> getAuthors(Pageable pageable);
+    Page<Author> getAuthors(Pageable pageable);
 }

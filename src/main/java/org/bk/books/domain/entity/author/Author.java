@@ -10,24 +10,23 @@ import org.immutables.value.Value;
 @JsonSerialize(as = ImmutableAuthor.class)
 @JsonDeserialize(as = ImmutableAuthor.class)
 public interface Author {
-  static Author create(
-      AuthorId authorId, String name, Instant createdAt, Instant updatedAt, int version) {
-    return ImmutableAuthor.builder()
-        .id(authorId)
-        .name(AuthorName.of(name).value())
-        .createdAt(createdAt)
-        .updatedAt(updatedAt)
-        .version(version)
-        .build();
-  }
+    static Author create(AuthorId authorId, String name, Instant createdAt, Instant updatedAt, int version) {
+        return ImmutableAuthor.builder()
+                .id(authorId)
+                .name(AuthorName.of(name).value())
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .version(version)
+                .build();
+    }
 
-  AuthorId id();
+    AuthorId id();
 
-  String name();
+    String name();
 
-  Instant createdAt();
+    Instant createdAt();
 
-  Instant updatedAt();
+    Instant updatedAt();
 
-  int version();
+    int version();
 }

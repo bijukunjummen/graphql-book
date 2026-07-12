@@ -8,5 +8,5 @@ import org.bk.books.domain.entity.book.BookId;
 
 @SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface BookAuthorManagementService {
-  Map<BookId, List<Author>> getAuthorsForBooks(ByIds<BookId> ids);
+    Map<BookId, List<Author>> getAuthorsForBooks(ByIds<BookId> ids);
 }

@@ -23,21 +23,23 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class BookServiceITest {
 
-  @Autowired private BookService bookService;
-  @Autowired private AuthorService authorService;
+    @Autowired
+    private BookService bookService;
 
-  @Test
-  void test_setAndReplaceAuthors_success() {
-    Author author1 = authorService.createAuthor(new CreateAuthorCommand("author-1"));
-    Author author2 = authorService.createAuthor(new CreateAuthorCommand("author-2"));
-    Book book = bookService.createBook(new CreateBookCommand("book-1", 100, List.of(author1.id())));
-    bookService.updateBookAuthors(
-        new UpdateBookAuthorsCommand(book.id(), List.of(author2.id()), book.version()));
-    assertThat(bookService.getBook(new ById<>(book.id())).orElseThrow().authors())
-        .isEqualTo(List.of(author2.id()));
-  }
+    @Autowired
+    private AuthorService authorService;
 
-  @ServiceConnection @Container
-  private static final PostgreSQLContainer<?> postgresContainer =
-      new PostgreSQLContainer<>("postgres:15.5-bullseye");
+    @Test
+    void test_setAndReplaceAuthors_success() {
+        Author author1 = authorService.createAuthor(new CreateAuthorCommand("author-1"));
+        Author author2 = authorService.createAuthor(new CreateAuthorCommand("author-2"));
+        Book book = bookService.createBook(new CreateBookCommand("book-1", 100, List.of(author1.id())));
+        bookService.updateBookAuthors(new UpdateBookAuthorsCommand(book.id(), List.of(author2.id()), book.version()));
+        assertThat(bookService.getBook(new ById<>(book.id())).orElseThrow().authors())
+                .isEqualTo(List.of(author2.id()));
+    }
+
+    @ServiceConnection
+    @Container
+    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15.5-bullseye");
 }

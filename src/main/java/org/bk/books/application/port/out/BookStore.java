@@ -8,11 +8,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface BookStore {
-  Book save(Book book);
+    Book save(Book book);
 
-  Optional<Book> findById(BookId id);
+    Optional<Book> findById(BookId id);
 
-  List<Book> findAllByIds(List<BookId> ids);
+    List<Book> findAllByIds(List<BookId> ids);
 
-  Page<Book> findAll(Pageable pageable);
+    Page<Book> findAll(Pageable pageable);
 }

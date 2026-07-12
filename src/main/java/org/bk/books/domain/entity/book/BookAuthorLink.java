@@ -6,13 +6,13 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 public interface BookAuthorLink {
-  BookAuthorLinkId id();
+    BookAuthorLinkId id();
 
-  BookId bookId();
+    BookId bookId();
 
-  AuthorId authorId();
+    AuthorId authorId();
 
-  Instant createdAt();
+    Instant createdAt();
 
-  Instant updatedAt();
+    Instant updatedAt();
 }

@@ -9,11 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface AuthorStore {
-  Author save(Author author);
+    Author save(Author author);
 
-  Optional<Author> findById(AuthorId id);
+    Optional<Author> findById(AuthorId id);
 
-  List<Author> findAllByIds(Collection<AuthorId> ids);
+    List<Author> findAllByIds(Collection<AuthorId> ids);
 
-  Page<Author> findAll(Pageable pageable);
+    Page<Author> findAll(Pageable pageable);
 }

@@ -11,25 +11,24 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table("book_author")
-public record BookAuthorLinkEntity(
-    @Id UUID id, UUID bookId, UUID authorId, Instant createdAt, Instant updatedAt) {
+public record BookAuthorLinkEntity(@Id UUID id, UUID bookId, UUID authorId, Instant createdAt, Instant updatedAt) {
 
-  public static BookAuthorLinkEntity fromModel(BookAuthorLink bookAuthor) {
-    return new BookAuthorLinkEntity(
-        bookAuthor.id().id(),
-        bookAuthor.bookId().id(),
-        bookAuthor.authorId().id(),
-        bookAuthor.createdAt(),
-        bookAuthor.updatedAt());
-  }
+    public static BookAuthorLinkEntity fromModel(BookAuthorLink bookAuthor) {
+        return new BookAuthorLinkEntity(
+                bookAuthor.id().id(),
+                bookAuthor.bookId().id(),
+                bookAuthor.authorId().id(),
+                bookAuthor.createdAt(),
+                bookAuthor.updatedAt());
+    }
 
-  public BookAuthorLink toModel() {
-    return ImmutableBookAuthorLink.builder()
-        .id(BookAuthorLinkId.of(id))
-        .bookId(BookId.of(bookId))
-        .authorId(AuthorId.of(authorId))
-        .createdAt(createdAt)
-        .updatedAt(updatedAt)
-        .build();
-  }
+    public BookAuthorLink toModel() {
+        return ImmutableBookAuthorLink.builder()
+                .id(BookAuthorLinkId.of(id))
+                .bookId(BookId.of(bookId))
+                .authorId(AuthorId.of(authorId))
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+    }
 }

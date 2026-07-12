@@ -8,8 +8,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 public class BookRepositoryImpl implements BookCustomRepository {
-  private static final String QUERY =
-      """
+    private static final String QUERY = """
             SELECT b.* FROM
             books b LEFT JOIN book_rank br on br.book_id = b.id
             ORDER BY
@@ -20,30 +19,30 @@ public class BookRepositoryImpl implements BookCustomRepository {
             LIMIT :limit OFFSET :offset
             """;
 
-  private static final String COUNT_QUERY =
-      """
+    private static final String COUNT_QUERY = """
                select count(1) from books b
             """;
-  public static final String LIMIT = "limit";
-  public static final String OFFSET = "offset";
-  private final JdbcClient jdbcClient;
+    public static final String LIMIT = "limit";
+    public static final String OFFSET = "offset";
+    private final JdbcClient jdbcClient;
 
-  public BookRepositoryImpl(JdbcClient jdbcClient) {
-    this.jdbcClient = jdbcClient;
-  }
+    public BookRepositoryImpl(JdbcClient jdbcClient) {
+        this.jdbcClient = jdbcClient;
+    }
 
-  @Override
-  public Page<BookEntity> getRankedBooks(Pageable pageable) {
-    int limit = pageable.getPageSize();
-    long offset = pageable.getOffset();
-    final List<BookEntity> content =
-        jdbcClient
-            .sql(QUERY)
-            .param(LIMIT, limit)
-            .param(OFFSET, offset)
-            .query(BookEntity.class)
-            .list();
-    return PageableExecutionUtils.getPage(
-        content, pageable, () -> jdbcClient.sql(COUNT_QUERY).query(Long.class).single());
-  }
+    @Override
+    public Page<BookEntity> getRankedBooks(Pageable pageable) {
+        int limit = pageable.getPageSize();
+        long offset = pageable.getOffset();
+        final List<BookEntity> content = jdbcClient
+                .sql(QUERY)
+                .param(LIMIT, limit)
+                .param(OFFSET, offset)
+                .query(BookEntity.class)
+                .list();
+        return PageableExecutionUtils.getPage(
+                content,
+                pageable,
+                () -> jdbcClient.sql(COUNT_QUERY).query(Long.class).single());
+    }
 }

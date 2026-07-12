@@ -7,14 +7,14 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class SampleDataController {
-  private final SampleDataService sampleDataService;
+    private final SampleDataService sampleDataService;
 
-  public SampleDataController(SampleDataService sampleDataService) {
-    this.sampleDataService = sampleDataService;
-  }
+    public SampleDataController(SampleDataService sampleDataService) {
+        this.sampleDataService = sampleDataService;
+    }
 
-  @MutationMapping
-  public LoadSampleDataPayload loadSampleData() {
-    return LoadSampleDataPayload.map(sampleDataService.loadSampleData());
-  }
+    @MutationMapping
+    public LoadSampleDataPayload loadSampleData() {
+        return LoadSampleDataPayload.map(sampleDataService.loadSampleData());
+    }
 }
