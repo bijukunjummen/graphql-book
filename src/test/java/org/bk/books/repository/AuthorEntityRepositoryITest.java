@@ -6,7 +6,7 @@ import java.time.Clock;
 import org.bk.books.AuthorTestData;
 import org.bk.books.TimeTestData;
 import org.bk.books.entity.AuthorEntity;
-import org.bk.books.repository.author.AuthorRepository;
+import org.bk.books.repository.author.AuthorEntityRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
@@ -19,26 +19,26 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @DataJdbcTest(properties = "spring.test.database.replace=NONE")
 @Testcontainers
-class AuthorRepositoryITest {
+class AuthorEntityRepositoryITest {
 
     @Autowired
-    private AuthorRepository authorRepository;
+    private AuthorEntityRepository authorEntityRepository;
 
     private Clock clock = TimeTestData.FIXED_CLOCK;
 
     @Test
     void test_authorRepositoryCrudOperations_withAuthor_returnsSavedUpdatedAndPagedAuthor() {
         AuthorEntity author = AuthorEntity.fromModel(AuthorTestData.sampleAuthor_1());
-        authorRepository.save(author);
-        assertThat(authorRepository.findById(author.id()))
+        authorEntityRepository.save(author);
+        assertThat(authorEntityRepository.findById(author.id()))
                 .hasValue(new AuthorEntity(author.id(), author.name(), author.createdAt(), author.updatedAt(), 1));
         AuthorEntity updatedAuthor =
                 new AuthorEntity(author.id(), "firstUpdated last", author.createdAt(), author.updatedAt(), 1);
-        authorRepository.save(updatedAuthor);
-        assertThat(authorRepository.findById(author.id()))
+        authorEntityRepository.save(updatedAuthor);
+        assertThat(authorEntityRepository.findById(author.id()))
                 .hasValue(new AuthorEntity(
                         author.id(), "firstUpdated last", updatedAuthor.createdAt(), updatedAuthor.updatedAt(), 2));
-        Page<AuthorEntity> page = authorRepository.findAll(Pageable.ofSize(5));
+        Page<AuthorEntity> page = authorEntityRepository.findAll(Pageable.ofSize(5));
         assertThat(page.getTotalElements()).isEqualTo(1);
     }
 

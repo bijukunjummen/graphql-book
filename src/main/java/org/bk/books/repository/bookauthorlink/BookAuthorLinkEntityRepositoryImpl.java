@@ -5,7 +5,7 @@ import java.util.List;
 import org.bk.books.entity.BookAuthorLinkEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class BookAuthorEntityLinkEntityRepositoryImpl implements BookAuthorLinkEntityCustomRepository {
+public class BookAuthorLinkEntityRepositoryImpl implements BookAuthorLinkEntityCustomRepository {
     private static final String UPSERT_BATCH_QUERY = """
             INSERT INTO book_author (id, book_id, author_id, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?)
@@ -15,7 +15,7 @@ public class BookAuthorEntityLinkEntityRepositoryImpl implements BookAuthorLinkE
 
     private final JdbcTemplate jdbcTemplate;
 
-    public BookAuthorEntityLinkEntityRepositoryImpl(JdbcTemplate jdbcTemplate) {
+    public BookAuthorLinkEntityRepositoryImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

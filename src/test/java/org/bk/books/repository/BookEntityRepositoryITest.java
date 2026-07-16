@@ -15,9 +15,9 @@ import org.bk.books.BookTestData;
 import org.bk.books.entity.AuthorEntity;
 import org.bk.books.entity.BookAuthorLinkEntity;
 import org.bk.books.entity.BookEntity;
-import org.bk.books.repository.author.AuthorRepository;
-import org.bk.books.repository.book.BookRepository;
-import org.bk.books.repository.bookauthorlink.BookAuthorLinkRepository;
+import org.bk.books.repository.author.AuthorEntityRepository;
+import org.bk.books.repository.book.BookEntityEntityRepository;
+import org.bk.books.repository.bookauthorlink.BookAuthorLinkEntityRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
@@ -31,49 +31,51 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @DataJdbcTest(properties = "spring.test.database.replace=NONE")
 @Testcontainers
-class BookRepositoryITest {
+class BookEntityRepositoryITest {
 
     @Autowired
-    private BookRepository bookRepository;
+    private BookEntityEntityRepository bookEntityRepository;
 
     @Autowired
-    private AuthorRepository authorRepository;
+    private AuthorEntityRepository authorEntityRepository;
 
     @Autowired
-    private BookAuthorLinkRepository bookAuthorLinkRepository;
+    private BookAuthorLinkEntityRepository bookAuthorLinkEntityRepository;
 
     @Test
     void test_crudOperations_withBookAndAuthor_returnsSavedBook() {
         AuthorEntity author = AuthorEntity.fromModel(sampleAuthor_1());
-        authorRepository.save(author);
+        authorEntityRepository.save(author);
 
         BookEntity book = BookEntity.fromModel(BookTestData.sampleBook());
-        bookRepository.save(book);
-        bookAuthorLinkRepository.save(BookAuthorLinkEntity.fromModel(BookAuthorLinkTestData.sampleBookAuthorLink()));
-        assertThat(bookRepository.findById(book.id()).orElseThrow().name()).isEqualTo(book.name());
+        bookEntityRepository.save(book);
+        bookAuthorLinkEntityRepository.save(
+                BookAuthorLinkEntity.fromModel(BookAuthorLinkTestData.sampleBookAuthorLink()));
+        assertThat(bookEntityRepository.findById(book.id()).orElseThrow().name())
+                .isEqualTo(book.name());
     }
 
     @Test
     void test_getBooks_returnsPaginatedResults() {
         AuthorEntity author1 = AuthorEntity.fromModel(sampleAuthor_1());
-        AuthorEntity savedAuthor = authorRepository.save(author1);
+        AuthorEntity savedAuthor = authorEntityRepository.save(author1);
 
         List<BookEntity> bookEntityList = IntStream.range(0, 10)
                 .mapToObj(i -> new BookEntity(
                         UUID.randomUUID(), "name-" + i, 100, DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE, 0))
                 .toList();
         List<BookEntity> savedBookEntities = StreamSupport.stream(
-                        bookRepository.saveAll(bookEntityList).spliterator(), false)
+                        bookEntityRepository.saveAll(bookEntityList).spliterator(), false)
                 .toList();
 
         bookEntityList.forEach(book -> {
-            bookAuthorLinkRepository.save(new BookAuthorLinkEntity(
+            bookAuthorLinkEntityRepository.save(new BookAuthorLinkEntity(
                     UUID.randomUUID(), book.id(), savedAuthor.id(), DEFAULT_CREATED_DATE, DEFAULT_UPDATED_DATE));
         });
 
         Pageable page1 = PageRequest.of(0, 2);
 
-        Page<BookEntity> booksPage1 = bookRepository.getRankedBooks(page1);
+        Page<BookEntity> booksPage1 = bookEntityRepository.getRankedBooks(page1);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(booksPage1.getTotalElements()).isEqualTo(10);
             softly.assertThat(booksPage1.getTotalPages()).isEqualTo(5);
@@ -81,7 +83,7 @@ class BookRepositoryITest {
         });
 
         Pageable page2 = booksPage1.nextPageable();
-        Page<BookEntity> booksPage2 = bookRepository.getRankedBooks(page2);
+        Page<BookEntity> booksPage2 = bookEntityRepository.getRankedBooks(page2);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(booksPage2.getTotalElements()).isEqualTo(10);
             softly.assertThat(booksPage2.getTotalPages()).isEqualTo(5);

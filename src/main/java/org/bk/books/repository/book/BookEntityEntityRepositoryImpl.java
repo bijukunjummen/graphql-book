@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-public class BookRepositoryImpl implements BookCustomRepository {
+public class BookEntityEntityRepositoryImpl implements BookEntityCustomRepository {
     private static final String QUERY = """
             SELECT b.* FROM
             books b LEFT JOIN book_rank br on br.book_id = b.id
@@ -26,7 +26,7 @@ public class BookRepositoryImpl implements BookCustomRepository {
     public static final String OFFSET = "offset";
     private final JdbcClient jdbcClient;
 
-    public BookRepositoryImpl(JdbcClient jdbcClient) {
+    public BookEntityEntityRepositoryImpl(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 

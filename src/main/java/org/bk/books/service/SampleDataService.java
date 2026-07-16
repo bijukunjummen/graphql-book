@@ -1,22 +1,22 @@
 package org.bk.books.service;
 
 import java.util.List;
+import org.bk.books.application.BookAuthorManagementService;
 import org.bk.books.domain.entity.author.Author;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.service.author.AuthorService;
 import org.bk.books.service.author.AuthorServiceCommands.CreateOrUpdateAuthorCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
-import org.bk.books.service.book.BookService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SampleDataService {
-    private final BookService bookService;
+    private final BookAuthorManagementService bookAuthorManagementService;
     private final AuthorService authorService;
 
-    public SampleDataService(BookService bookService, AuthorService authorService) {
-        this.bookService = bookService;
+    public SampleDataService(BookAuthorManagementService bookAuthorManagementService, AuthorService authorService) {
+        this.bookAuthorManagementService = bookAuthorManagementService;
         this.authorService = authorService;
     }
 
@@ -74,7 +74,7 @@ public class SampleDataService {
     }
 
     private void createBook(BookId id, String name, int pageCount, List<Author> authors) {
-        bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(
+        bookAuthorManagementService.createOrUpdateBook(new CreateOrUpdateBookCommand(
                 id, name, pageCount, authors.stream().map(Author::id).toList()));
     }
 }

@@ -4,4 +4,4 @@ import java.util.List;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.BookId;
 
-public record BookUpdatedEvent(BookId bookId, String name, int pageCount, List<AuthorId> authorIds) {}
+public record BookAuthorsUpdatedEvent(BookId bookId, List<AuthorId> previousAuthors, List<AuthorId> newAuthors) {}

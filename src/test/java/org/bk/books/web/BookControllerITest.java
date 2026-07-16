@@ -1,13 +1,14 @@
 package org.bk.books.web;
 
 import java.util.List;
+import org.bk.books.application.BookAuthorManagementService;
+import org.bk.books.domain.entity.author.Author;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.Book;
 import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.service.author.AuthorService;
 import org.bk.books.service.author.AuthorServiceCommands.CreateOrUpdateAuthorCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
-import org.bk.books.service.book.BookService;
 import org.bk.books.web.dto.CreateAuthorInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,12 +25,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-class BookControllerTest {
+class BookControllerITest {
 
     private WebGraphQlTester graphQlTester;
 
     @Autowired
-    private BookService bookService;
+    private BookAuthorManagementService bookAuthorManagementService;
 
     @Autowired
     private AuthorService authorService;
@@ -48,13 +49,13 @@ class BookControllerTest {
 
     @Test
     void test_findBookById_withExistingBook_returnsBook() {
-        var a12 = authorService.createOrUpdateAuthor(new CreateOrUpdateAuthorCommand(
+        Author a12 = authorService.createOrUpdateAuthor(new CreateOrUpdateAuthorCommand(
                 AuthorId.parse("c6aa1cb3-c9bd-47e0-ba1f-12a35027df8d"), "Terry Pratchett"));
 
-        var a13 = authorService.createOrUpdateAuthor(
+        Author a13 = authorService.createOrUpdateAuthor(
                 new CreateOrUpdateAuthorCommand(AuthorId.parse("38469694-b350-4f1a-89be-1c8fd9aeaf2d"), "Neil Gaiman"));
 
-        bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(
+        bookAuthorManagementService.createOrUpdateBook(new CreateOrUpdateBookCommand(
                 BookId.parse("2f5ac49b-af88-4e72-a549-5f86aff4e549"), "Good Omens", 490, List.of(a12.id(), a13.id())));
 
         String query = """
@@ -149,7 +150,7 @@ class BookControllerTest {
         var author = authorService.createOrUpdateAuthor(new CreateOrUpdateAuthorCommand(
                 AuthorId.parse("f3b5bb7e-1f73-4ef0-bdc3-ef4f5e1d8c1e"), "Ursula K. Le Guin"));
 
-        Book book = bookService.createOrUpdateBook(new CreateOrUpdateBookCommand(
+        Book book = bookAuthorManagementService.createOrUpdateBook(new CreateOrUpdateBookCommand(
                 BookId.parse("d8d387ac-0b36-4d33-b6d2-9f1a4591ec35"),
                 "A Wizard of Earthsea",
                 205,

@@ -8,27 +8,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.bk.books.application.port.out.BookAuthorLinkStore;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.entity.BookAuthorLinkEntity;
-import org.bk.books.repository.bookauthorlink.BookAuthorLinkRepository;
+import org.bk.books.port.BookAuthorLinkStore;
+import org.bk.books.repository.bookauthorlink.BookAuthorLinkEntityRepository;
 import org.bk.books.util.Uuids;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SpringDataBookAuthorLinkStore implements BookAuthorLinkStore {
-    private final BookAuthorLinkRepository bookAuthorLinkRepository;
+    private final BookAuthorLinkEntityRepository bookAuthorLinkEntityRepository;
     private final Uuids uuids;
 
-    public SpringDataBookAuthorLinkStore(BookAuthorLinkRepository bookAuthorLinkRepository, Uuids uuids) {
-        this.bookAuthorLinkRepository = bookAuthorLinkRepository;
+    public SpringDataBookAuthorLinkStore(BookAuthorLinkEntityRepository bookAuthorLinkEntityRepository, Uuids uuids) {
+        this.bookAuthorLinkEntityRepository = bookAuthorLinkEntityRepository;
         this.uuids = uuids;
     }
 
     @Override
     public void replaceAuthorsForBook(BookId bookId, List<AuthorId> authorIds, Instant now) {
-        bookAuthorLinkRepository.deleteByBookId(bookId.id());
+        bookAuthorLinkEntityRepository.deleteByBookId(bookId.id());
         if (authorIds.isEmpty()) {
             return;
         }
@@ -36,13 +36,13 @@ public class SpringDataBookAuthorLinkStore implements BookAuthorLinkStore {
         List<BookAuthorLinkEntity> links = authorIds.stream()
                 .map(authorId -> new BookAuthorLinkEntity(uuids.generateUuid(), bookId.id(), authorId.id(), now, now))
                 .toList();
-        bookAuthorLinkRepository.upsertAll(links);
+        bookAuthorLinkEntityRepository.upsertAll(links);
     }
 
     @Override
     public Map<BookId, List<AuthorId>> findAuthorIdsByBookIds(List<BookId> bookIds) {
         Set<UUID> bookIdValues = bookIds.stream().map(BookId::id).collect(Collectors.toSet());
-        List<BookAuthorLinkEntity> links = bookAuthorLinkRepository.findAllByBookIdIn(bookIdValues);
+        List<BookAuthorLinkEntity> links = bookAuthorLinkEntityRepository.findAllByBookIdIn(bookIdValues);
 
         Map<BookId, List<AuthorId>> authorIdsByBookId = new LinkedHashMap<>();
         for (BookAuthorLinkEntity link : links) {

@@ -1,4 +1,4 @@
-package org.bk.books.application.port.out;
+package org.bk.books.port;
 
 import java.time.Instant;
 import java.util.List;

@@ -9,7 +9,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AuthorRepository
+public interface AuthorEntityRepository
         extends CrudRepository<AuthorEntity, UUID>, PagingAndSortingRepository<AuthorEntity, UUID> {
     List<AuthorEntity> findAllByIdIn(Collection<UUID> authorIds);
 }

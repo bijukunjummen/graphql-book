@@ -14,6 +14,7 @@ import org.bk.books.common.query.ByIds;
 import org.bk.books.domain.entity.author.Author;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.BookId;
+import org.bk.books.port.BookAuthorLinkStore;
 import org.bk.books.service.author.AuthorService;
 import org.bk.books.service.book.BookService;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,9 @@ class BookAuthorManagementServiceTest {
     private BookService bookService;
 
     @Mock
+    private BookAuthorLinkStore bookAuthorLinkStore;
+
+    @Mock
     private AuthorService authorService;
 
     @Test
@@ -40,7 +44,7 @@ class BookAuthorManagementServiceTest {
         BookId secondBookId = BookId.parse("c22ee984-7f74-4158-8bd5-79235b0ad051");
         ByIds<BookId> query = new ByIds<>(List.of(firstBookId, secondBookId));
 
-        when(bookService.getAuthorIdsForBooks(query)).thenReturn(Map.of());
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(query.ids())).thenReturn(Map.of());
 
         Map<BookId, List<Author>> result = bookAuthorManagementService.getAuthorsForBooks(query);
 
@@ -69,7 +73,7 @@ class BookAuthorManagementServiceTest {
                 TimeTestData.DEFAULT_UPDATED_DATE,
                 1);
 
-        when(bookService.getAuthorIdsForBooks(query))
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(query.ids()))
                 .thenReturn(Map.of(
                         firstBookId, List.of(firstAuthorId),
                         secondBookId, List.of(secondAuthorId)));
@@ -99,7 +103,7 @@ class BookAuthorManagementServiceTest {
                 TimeTestData.DEFAULT_UPDATED_DATE,
                 1);
 
-        when(bookService.getAuthorIdsForBooks(query))
+        when(bookAuthorLinkStore.findAuthorIdsByBookIds(query.ids()))
                 .thenReturn(Map.of(bookId, List.of(knownAuthorId, missingAuthorId)));
         when(authorService.getAuthors(ArgumentMatchers.<ByIds<AuthorId>>any())).thenReturn(List.of(knownAuthor));
 

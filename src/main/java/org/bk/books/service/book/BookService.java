@@ -1,16 +1,13 @@
 package org.bk.books.service.book;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
-import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.Book;
 import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.service.book.BookCommands.CreateBookCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
-import org.bk.books.service.book.BookCommands.UpdateBookAuthorsCommand;
 import org.bk.books.service.book.BookCommands.UpdateBookCommand;
 import org.bk.books.service.book.BookCommands.UpdateBookNameCommand;
 import org.bk.books.service.book.BookQueries.GetBooksQuery;
@@ -26,8 +23,6 @@ public interface BookService {
 
     Book updateBookName(UpdateBookNameCommand command);
 
-    Book updateBookAuthors(UpdateBookAuthorsCommand command);
-
     Page<Book> getBooks(GetBooksQuery query);
 
     Page<Book> getBooks(Pageable pageable);
@@ -35,6 +30,4 @@ public interface BookService {
     Optional<Book> getBook(ById<BookId> query);
 
     List<Book> getBooks(ByIds<BookId> query);
-
-    Map<BookId, List<AuthorId>> getAuthorIdsForBooks(ByIds<BookId> query);
 }

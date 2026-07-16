@@ -3,20 +3,17 @@ package org.bk.books.service.book;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import org.bk.books.application.port.out.BookAuthorLinkStore;
-import org.bk.books.application.port.out.BookStore;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
-import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.Book;
 import org.bk.books.domain.entity.book.BookId;
-import org.bk.books.domain.entity.book.ImmutableBook;
-import org.bk.books.domain.event.BookAuthorsChangedEvent;
 import org.bk.books.domain.event.BookCreatedEvent;
+import org.bk.books.domain.event.BookNameUpdatedEvent;
+import org.bk.books.domain.event.BookUpdatedEvent;
 import org.bk.books.domain.validation.BookName;
 import org.bk.books.domain.validation.PageCount;
+import org.bk.books.port.BookStore;
 import org.bk.books.service.book.BookCommands.CreateBookCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
 import org.bk.books.service.book.BookCommands.UpdateBookCommand;
@@ -30,22 +27,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Service("bookService")
 public class BookServiceImpl implements BookService {
     private final BookStore bookStore;
-    private final BookAuthorLinkStore bookAuthorLinkStore;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
     private final Uuids uuids;
 
-    public BookServiceImpl(
-            BookStore bookStore,
-            BookAuthorLinkStore bookAuthorLinkStore,
-            ApplicationEventPublisher eventPublisher,
-            Clock clock,
-            Uuids uuids) {
+    public BookServiceImpl(BookStore bookStore, ApplicationEventPublisher eventPublisher, Clock clock, Uuids uuids) {
         this.bookStore = bookStore;
-        this.bookAuthorLinkStore = bookAuthorLinkStore;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
         this.uuids = uuids;
@@ -63,10 +53,10 @@ public class BookServiceImpl implements BookService {
                 now,
                 now,
                 0);
-        Book saved = persistBookWithAuthors(
-                newBook, command.authors().stream().distinct().toList(), now);
-        eventPublisher.publishEvent(new BookCreatedEvent(saved.id(), saved.authors()));
-        return saved;
+        bookStore.save(newBook);
+        eventPublisher.publishEvent(
+                new BookCreatedEvent(newBook.id(), newBook.name(), newBook.pageCount(), newBook.authors()));
+        return newBook;
     }
 
     @Override
@@ -77,7 +67,7 @@ public class BookServiceImpl implements BookService {
         Instant now = clock.instant();
         return book.map(existingBook -> {
                     if (command.version() == 0) {
-                        return enrichWithAuthors(existingBook);
+                        return existingBook;
                     }
                     Book updatedBook = Book.create(
                             existingBook.id(),
@@ -87,9 +77,9 @@ public class BookServiceImpl implements BookService {
                             existingBook.createdAt(),
                             now,
                             command.version());
-                    Book saved = persistBookWithAuthors(
-                            updatedBook, command.authors().stream().distinct().toList(), now);
-                    eventPublisher.publishEvent(new BookAuthorsChangedEvent(saved.id(), saved.authors()));
+                    Book saved = bookStore.save(updatedBook);
+                    eventPublisher.publishEvent(
+                            new BookUpdatedEvent(saved.id(), saved.name(), saved.pageCount(), saved.authors()));
                     return saved;
                 })
                 .orElseGet(() -> {
@@ -101,9 +91,9 @@ public class BookServiceImpl implements BookService {
                             now,
                             now,
                             0);
-                    Book saved = persistBookWithAuthors(
-                            newBook, command.authors().stream().distinct().toList(), now);
-                    eventPublisher.publishEvent(new BookCreatedEvent(saved.id(), saved.authors()));
+                    Book saved = bookStore.save(newBook);
+                    eventPublisher.publishEvent(
+                            new BookCreatedEvent(saved.id(), saved.name(), saved.pageCount(), saved.authors()));
                     return saved;
                 });
     }
@@ -121,10 +111,10 @@ public class BookServiceImpl implements BookService {
                 book.createdAt(),
                 now,
                 command.version());
-        Book saved = persistBookWithAuthors(
-                updatedBook, command.authors().stream().distinct().toList(), now);
-        eventPublisher.publishEvent(new BookAuthorsChangedEvent(saved.id(), saved.authors()));
-        return saved;
+        bookStore.save(updatedBook);
+        eventPublisher.publishEvent(new BookUpdatedEvent(
+                updatedBook.id(), updatedBook.name(), updatedBook.pageCount(), updatedBook.authors()));
+        return updatedBook;
     }
 
     @Override
@@ -140,55 +130,28 @@ public class BookServiceImpl implements BookService {
                 clock.instant(),
                 command.version());
         Book savedBook = bookStore.save(updatedBook);
-        return enrichWithAuthors(savedBook);
-    }
-
-    @Override
-    public Book updateBookAuthors(BookCommands.UpdateBookAuthorsCommand command) {
-        Book book = bookStore.findById(command.id()).orElseThrow();
-        bookAuthorLinkStore.replaceAuthorsForBook(command.id(), command.authorIds(), clock.instant());
-        return enrichWithAuthors(book);
+        eventPublisher.publishEvent(new BookNameUpdatedEvent(savedBook.id(), book.name(), savedBook.name()));
+        return savedBook;
     }
 
     @Override
     public Page<Book> getBooks(GetBooksQuery query) {
-        return bookStore
-                .findAll(Pageable.ofSize(query.size()).withPage(query.page()))
-                .map(this::enrichWithAuthors);
+        return bookStore.findAll(Pageable.ofSize(query.size()).withPage(query.page()));
     }
 
     @Override
     public Page<Book> getBooks(Pageable pageable) {
-        return bookStore.findAll(pageable).map(this::enrichWithAuthors);
+        return bookStore.findAll(pageable);
     }
 
     @Override
     public Optional<Book> getBook(ById<BookId> query) {
         BookId bookId = query.id();
-        return bookStore.findById(bookId).map(this::enrichWithAuthors);
+        return bookStore.findById(bookId);
     }
 
     @Override
     public List<Book> getBooks(ByIds<BookId> query) {
-        return bookStore.findAllByIds(query.ids()).stream()
-                .map(this::enrichWithAuthors)
-                .toList();
-    }
-
-    @Override
-    public Map<BookId, List<AuthorId>> getAuthorIdsForBooks(ByIds<BookId> query) {
-        return bookAuthorLinkStore.findAuthorIdsByBookIds(query.ids());
-    }
-
-    private Book persistBookWithAuthors(Book book, List<AuthorId> authorIds, Instant now) {
-        Book savedBook = bookStore.save(book);
-        bookAuthorLinkStore.replaceAuthorsForBook(savedBook.id(), authorIds, now);
-        return ImmutableBook.builder().from(savedBook).authors(authorIds).build();
-    }
-
-    private Book enrichWithAuthors(Book book) {
-        List<AuthorId> authors =
-                bookAuthorLinkStore.findAuthorIdsByBookIds(List.of(book.id())).getOrDefault(book.id(), List.of());
-        return ImmutableBook.builder().from(book).authors(authors).build();
+        return bookStore.findAllByIds(query.ids());
     }
 }

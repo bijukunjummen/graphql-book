@@ -12,7 +12,6 @@ import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.service.book.BookCommands.CreateBookCommand;
 import org.bk.books.service.book.BookCommands.UpdateBookAuthorsCommand;
 import org.bk.books.service.book.BookCommands.UpdateBookNameCommand;
-import org.bk.books.service.book.BookService;
 import org.bk.books.web.dto.AuthorDto;
 import org.bk.books.web.dto.BookDto;
 import org.bk.books.web.dto.CreateBookInput;
@@ -39,27 +38,23 @@ import reactor.core.publisher.Flux;
 @Controller
 public class BookController {
     private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
-    private final BookService bookService;
     private final BookAuthorManagementService bookAuthorManagementService;
     private final ConnectionPageSupport pagination;
 
-    public BookController(
-            BookService bookService,
-            BookAuthorManagementService bookAuthorManagementService,
-            ConnectionPageSupport pagination) {
-        this.bookService = bookService;
+    public BookController(BookAuthorManagementService bookAuthorManagementService, ConnectionPageSupport pagination) {
         this.bookAuthorManagementService = bookAuthorManagementService;
         this.pagination = pagination;
     }
 
     @QueryMapping
     public BookDto findBookById(@Argument UUID id) {
-        return BookDto.map(bookService.getBook(new ById<>(new BookId(id))).orElseThrow());
+        return BookDto.map(
+                bookAuthorManagementService.getBook(new ById<>(new BookId(id))).orElseThrow());
     }
 
     @MutationMapping
     public CreateBookPayload createBook(@Argument CreateBookInput input) {
-        Book createdBook = bookService.createBook(new CreateBookCommand(
+        Book createdBook = bookAuthorManagementService.createBook(new CreateBookCommand(
                 input.name(),
                 input.pageCount(),
                 input.authors().stream().map(AuthorId::parse).toList()));
@@ -68,14 +63,14 @@ public class BookController {
 
     @MutationMapping
     public UpdateBookNamePayload updateBookName(@Argument UpdateBookNameInput input) {
-        Book updatedBook = bookService.updateBookName(
+        Book updatedBook = bookAuthorManagementService.updateBookName(
                 new UpdateBookNameCommand(BookId.parse(input.id()), input.name(), input.version()));
         return new UpdateBookNamePayload(BookDto.map(updatedBook));
     }
 
     @MutationMapping
     public UpdateBookAuthorsPayload updateBookAuthors(@Argument UpdateBookAuthorsInput input) {
-        Book updatedBook = bookService.updateBookAuthors(new UpdateBookAuthorsCommand(
+        Book updatedBook = bookAuthorManagementService.updateBookAuthors(new UpdateBookAuthorsCommand(
                 BookId.parse(input.id()),
                 input.authors().stream().map(AuthorId::parse).toList(),
                 input.version()));
@@ -85,7 +80,8 @@ public class BookController {
     @SubscriptionMapping
     public Flux<BookDto> getABook(@Argument BookId id) {
         return Flux.interval(Duration.ofSeconds(5))
-                .map(l -> BookDto.map(bookService.getBook(new ById<>(id)).orElseThrow()));
+                .map(l -> BookDto.map(
+                        bookAuthorManagementService.getBook(new ById<>(id)).orElseThrow()));
     }
 
     //    @BatchMapping(typeName = "Book")
@@ -113,6 +109,7 @@ public class BookController {
 
     @QueryMapping
     public Page<BookDto> findBooks(ScrollSubrange subrange, @Argument List<SortInput> sort) {
-        return pagination.page(subrange, sort, pageable -> bookService.getBooks(pageable), BookDto::map);
+        return pagination.page(
+                subrange, sort, pageable -> bookAuthorManagementService.getBooks(pageable), BookDto::map);
     }
 }
