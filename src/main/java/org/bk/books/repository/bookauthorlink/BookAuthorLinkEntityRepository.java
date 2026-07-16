@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.bk.books.entity.BookAuthorLinkEntity;
 import org.springframework.data.repository.CrudRepository;
 
-public interface BookAuthorLinkRepository
-        extends BookAuthorLinkCustomRepository, CrudRepository<BookAuthorLinkEntity, UUID> {
+public interface BookAuthorLinkEntityEntityRepository
+        extends BookAuthorLinkEntityCustomRepository, CrudRepository<BookAuthorLinkEntity, UUID> {
     List<BookAuthorLinkEntity> findAllByBookIdIn(Set<UUID> bookIds);
 
     void deleteByBookId(UUID bookId);
