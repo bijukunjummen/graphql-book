@@ -9,8 +9,20 @@ spring:
     password: ${POSTGRES_PASSWORD:bookuser}
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/bookdb
+#  cloud:
+#    aws:
+#      region:
+#        static: us-east-1
+#      credentials:
+#        access-key: test
+#        secret-key: test
+#      sqs:
+#        region: us-east-1
+#      endpoint: http://localhost:4566
 
 books:
   demo:
     flaky-listener:
       enabled: false
+
+

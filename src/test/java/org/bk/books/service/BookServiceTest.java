@@ -23,10 +23,10 @@ import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookEvents.BookCreatedEvent;
+import org.bk.books.domain.entity.book.BookEvents.BookUpdatedEvent;
 import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.domain.entity.book.ImmutableBook;
-import org.bk.books.domain.event.BookCreatedEvent;
-import org.bk.books.domain.event.BookUpdatedEvent;
 import org.bk.books.port.BookStore;
 import org.bk.books.service.book.BookCommands.CreateBookCommand;
 import org.bk.books.service.book.BookCommands.CreateOrUpdateBookCommand;
@@ -91,7 +91,8 @@ class BookServiceTest {
                     softly.assertThat(savedBook.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
                     softly.assertThat(savedBook.version()).isZero();
                 })));
-        verify(eventPublisher).publishEvent(new BookCreatedEvent(BookId.of(BOOK_ID), BOOK_NAME_1, 100, List.of()));
+        verify(eventPublisher)
+                .publishEvent(new BookCreatedEvent(BOOK_ID, BookId.of(BOOK_ID), BOOK_NAME_1, 100, List.of()));
     }
 
     @Test
@@ -115,7 +116,7 @@ class BookServiceTest {
                     softly.assertThat(savedBookEntity.pageCount()).isEqualTo(pageCount);
                     softly.assertThat(savedBookEntity.version()).isZero();
                 })));
-        verify(eventPublisher).publishEvent(new BookCreatedEvent(bookId, bookName, pageCount, List.of()));
+        verify(eventPublisher).publishEvent(new BookCreatedEvent(BOOK_ID, bookId, bookName, pageCount, List.of()));
     }
 
     @Test
@@ -139,7 +140,8 @@ class BookServiceTest {
                     softly.assertThat(savedBookEntity.version()).isEqualTo(2);
                 })));
         verify(eventPublisher)
-                .publishEvent(new BookUpdatedEvent(bookId, savedBook.name(), savedBook.pageCount(), List.of()));
+                .publishEvent(
+                        new BookUpdatedEvent(BOOK_ID, bookId, savedBook.name(), savedBook.pageCount(), List.of()));
     }
 
     @Test
@@ -163,7 +165,8 @@ class BookServiceTest {
                     softly.assertThat(savedBookEntity.version()).isEqualTo(2);
                 })));
         verify(eventPublisher)
-                .publishEvent(new BookUpdatedEvent(bookId, savedBook.name(), savedBook.pageCount(), List.of()));
+                .publishEvent(
+                        new BookUpdatedEvent(BOOK_ID, bookId, savedBook.name(), savedBook.pageCount(), List.of()));
     }
 
     @Test

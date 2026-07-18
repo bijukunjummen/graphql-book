@@ -12,14 +12,15 @@ import org.bk.books.common.query.ByIds;
 import org.bk.books.domain.entity.author.Author;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookEvents.BookAuthorsUpdatedEvent;
 import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.domain.entity.book.ImmutableBook;
-import org.bk.books.domain.event.BookAuthorsUpdatedEvent;
 import org.bk.books.port.BookAuthorLinkStore;
 import org.bk.books.service.author.AuthorService;
 import org.bk.books.service.book.BookCommands;
 import org.bk.books.service.book.BookQueries;
 import org.bk.books.service.book.BookService;
+import org.bk.books.util.Uuids;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,7 @@ public class BookAuthorManagementServiceImpl implements BookAuthorManagementServ
     private final BookAuthorLinkStore bookAuthorLinkStore;
     private final AuthorService authorService;
     private final Clock clock;
+    private final Uuids uuids;
     private final ApplicationEventPublisher eventPublisher;
 
     public BookAuthorManagementServiceImpl(
@@ -39,11 +41,13 @@ public class BookAuthorManagementServiceImpl implements BookAuthorManagementServ
             BookAuthorLinkStore bookAuthorLinkStore,
             AuthorService authorService,
             Clock clock,
+            Uuids uuids,
             ApplicationEventPublisher eventPublisher) {
         this.bookService = bookService;
         this.bookAuthorLinkStore = bookAuthorLinkStore;
         this.authorService = authorService;
         this.clock = clock;
+        this.uuids = uuids;
         this.eventPublisher = eventPublisher;
     }
 
@@ -101,8 +105,8 @@ public class BookAuthorManagementServiceImpl implements BookAuthorManagementServ
         Book book = getBook(new ById<>(command.id())).orElseThrow();
         Book existingWithAuthors = enrichWithAuthors(book);
         bookAuthorLinkStore.replaceAuthorsForBook(command.id(), command.authorIds(), clock.instant());
-        eventPublisher.publishEvent(
-                new BookAuthorsUpdatedEvent(book.id(), existingWithAuthors.authors(), command.authorIds()));
+        eventPublisher.publishEvent(new BookAuthorsUpdatedEvent(
+                uuids.generateUuid(), book.id(), existingWithAuthors.authors(), command.authorIds()));
         return enrichWithAuthors(book);
     }
 

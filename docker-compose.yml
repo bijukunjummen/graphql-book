@@ -11,6 +11,10 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+  floci:
+    image: floci/floci:latest
+    ports:
+      - "4566:4566"
 
 volumes:
   postgres:

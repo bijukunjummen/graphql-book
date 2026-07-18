@@ -1,7 +1,0 @@
-package org.bk.books.domain.event;
-
-import java.util.List;
-import org.bk.books.domain.entity.author.AuthorId;
-import org.bk.books.domain.entity.book.BookId;
-
-public record BookAuthorsUpdatedEvent(BookId bookId, List<AuthorId> previousAuthors, List<AuthorId> newAuthors) {}

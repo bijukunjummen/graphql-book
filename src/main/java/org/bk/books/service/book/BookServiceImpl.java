@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.Optional;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
+import org.bk.books.components.outbox.OutboxMessagePublisher;
 import org.bk.books.domain.entity.book.Book;
+import org.bk.books.domain.entity.book.BookEvents.BookCreatedEvent;
+import org.bk.books.domain.entity.book.BookEvents.BookNameUpdatedEvent;
+import org.bk.books.domain.entity.book.BookEvents.BookUpdatedEvent;
 import org.bk.books.domain.entity.book.BookId;
-import org.bk.books.domain.event.BookCreatedEvent;
-import org.bk.books.domain.event.BookNameUpdatedEvent;
-import org.bk.books.domain.event.BookUpdatedEvent;
 import org.bk.books.domain.validation.BookName;
 import org.bk.books.domain.validation.PageCount;
 import org.bk.books.port.BookStore;
@@ -21,7 +22,6 @@ import org.bk.books.service.book.BookCommands.UpdateBookNameCommand;
 import org.bk.books.service.book.BookQueries.GetBooksQuery;
 import org.bk.books.service.exception.DomainException;
 import org.bk.books.util.Uuids;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,13 +30,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("bookService")
 public class BookServiceImpl implements BookService {
     private final BookStore bookStore;
-    private final ApplicationEventPublisher eventPublisher;
+    private final OutboxMessagePublisher outboxMessagePublisher;
     private final Clock clock;
     private final Uuids uuids;
 
-    public BookServiceImpl(BookStore bookStore, ApplicationEventPublisher eventPublisher, Clock clock, Uuids uuids) {
+    public BookServiceImpl(
+            BookStore bookStore, OutboxMessagePublisher outboxMessagePublisher, Clock clock, Uuids uuids) {
         this.bookStore = bookStore;
-        this.eventPublisher = eventPublisher;
+        this.outboxMessagePublisher = outboxMessagePublisher;
         this.clock = clock;
         this.uuids = uuids;
     }
@@ -54,8 +55,8 @@ public class BookServiceImpl implements BookService {
                 now,
                 0);
         bookStore.save(newBook);
-        eventPublisher.publishEvent(
-                new BookCreatedEvent(newBook.id(), newBook.name(), newBook.pageCount(), newBook.authors()));
+        outboxMessagePublisher.publish(new BookCreatedEvent(
+                uuids.generateUuid(), newBook.id(), newBook.name(), newBook.pageCount(), newBook.authors()));
         return newBook;
     }
 
@@ -78,8 +79,8 @@ public class BookServiceImpl implements BookService {
                             now,
                             command.version());
                     Book saved = bookStore.save(updatedBook);
-                    eventPublisher.publishEvent(
-                            new BookUpdatedEvent(saved.id(), saved.name(), saved.pageCount(), saved.authors()));
+                    outboxMessagePublisher.publish(new BookUpdatedEvent(
+                            uuids.generateUuid(), saved.id(), saved.name(), saved.pageCount(), saved.authors()));
                     return saved;
                 })
                 .orElseGet(() -> {
@@ -92,8 +93,8 @@ public class BookServiceImpl implements BookService {
                             now,
                             0);
                     Book saved = bookStore.save(newBook);
-                    eventPublisher.publishEvent(
-                            new BookCreatedEvent(saved.id(), saved.name(), saved.pageCount(), saved.authors()));
+                    outboxMessagePublisher.publish(new BookCreatedEvent(
+                            uuids.generateUuid(), saved.id(), saved.name(), saved.pageCount(), saved.authors()));
                     return saved;
                 });
     }
@@ -112,8 +113,12 @@ public class BookServiceImpl implements BookService {
                 now,
                 command.version());
         bookStore.save(updatedBook);
-        eventPublisher.publishEvent(new BookUpdatedEvent(
-                updatedBook.id(), updatedBook.name(), updatedBook.pageCount(), updatedBook.authors()));
+        outboxMessagePublisher.publish(new BookUpdatedEvent(
+                uuids.generateUuid(),
+                updatedBook.id(),
+                updatedBook.name(),
+                updatedBook.pageCount(),
+                updatedBook.authors()));
         return updatedBook;
     }
 
@@ -130,7 +135,8 @@ public class BookServiceImpl implements BookService {
                 clock.instant(),
                 command.version());
         Book savedBook = bookStore.save(updatedBook);
-        eventPublisher.publishEvent(new BookNameUpdatedEvent(savedBook.id(), book.name(), savedBook.name()));
+        outboxMessagePublisher.publish(
+                new BookNameUpdatedEvent(uuids.generateUuid(), savedBook.id(), book.name(), savedBook.name()));
         return savedBook;
     }
 
