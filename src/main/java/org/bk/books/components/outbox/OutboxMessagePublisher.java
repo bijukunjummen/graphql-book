@@ -1,5 +1,7 @@
 package org.bk.books.components.outbox;
 
+import org.bk.books.domain.entity.common.BaseEvent;
+
 public interface OutboxMessagePublisher {
-    <T> void publish(T message);
+    void publish(BaseEvent message);
 }

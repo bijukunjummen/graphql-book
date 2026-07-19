@@ -1,7 +1,11 @@
 package org.bk.books.config;
 
 import io.awspring.cloud.sqs.operations.SqsTemplate;
+import org.bk.books.components.outbox.BrokerMessagePublisher;
+import org.bk.books.components.outbox.DatabaseOutboxMessagePublisher;
 import org.bk.books.components.outbox.EventDispatcher;
+import org.bk.books.components.outbox.OutboxDispatcher;
+import org.bk.books.components.outbox.OutboxEventStore;
 import org.bk.books.components.outbox.OutboxMessagePublisher;
 import org.bk.books.components.outbox.SpringEventDispatcher;
 import org.bk.books.components.outbox.SqsOutboxMessageListener;
@@ -31,8 +35,19 @@ public class OutboxConfig {
     }
 
     @Bean
-    public OutboxMessagePublisher outboxMessagePublisher(SqsTemplate outboxSqsTemplate, ObjectMapper objectMapper) {
-        return new SqsOutboxMessagePublisher(outboxSqsTemplate, objectMapper, OUTBOX_QUEUE_NAME);
+    public OutboxMessagePublisher outboxMessagePublisher(OutboxEventStore outboxEventStore, ObjectMapper objectMapper) {
+        return new DatabaseOutboxMessagePublisher(outboxEventStore, objectMapper);
+    }
+
+    @Bean
+    public BrokerMessagePublisher brokerMessagePublisher(SqsTemplate outboxSqsTemplate) {
+        return new SqsOutboxMessagePublisher(outboxSqsTemplate, OUTBOX_QUEUE_NAME);
+    }
+
+    @Bean
+    public OutboxDispatcher outboxDispatcher(
+            OutboxEventStore outboxEventStore, BrokerMessagePublisher brokerMessagePublisher) {
+        return new OutboxDispatcher(outboxEventStore, brokerMessagePublisher, 25);
     }
 
     @Bean

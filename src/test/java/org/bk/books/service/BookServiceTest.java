@@ -21,6 +21,7 @@ import java.util.UUID;
 import org.bk.books.TimeTestData;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
+import org.bk.books.components.outbox.OutboxMessagePublisher;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.Book;
 import org.bk.books.domain.entity.book.BookEvents.BookCreatedEvent;
@@ -43,7 +44,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -61,7 +61,7 @@ class BookServiceTest {
     private BookStore bookStore;
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private OutboxMessagePublisher outboxMessagePublisher;
 
     @Spy
     private Clock clock = TimeTestData.FIXED_CLOCK;
@@ -91,8 +91,8 @@ class BookServiceTest {
                     softly.assertThat(savedBook.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
                     softly.assertThat(savedBook.version()).isZero();
                 })));
-        verify(eventPublisher)
-                .publishEvent(new BookCreatedEvent(BOOK_ID, BookId.of(BOOK_ID), BOOK_NAME_1, 100, List.of()));
+        verify(outboxMessagePublisher)
+                .publish(new BookCreatedEvent(BOOK_ID, BookId.of(BOOK_ID), BOOK_NAME_1, 100, List.of()));
     }
 
     @Test
@@ -116,7 +116,7 @@ class BookServiceTest {
                     softly.assertThat(savedBookEntity.pageCount()).isEqualTo(pageCount);
                     softly.assertThat(savedBookEntity.version()).isZero();
                 })));
-        verify(eventPublisher).publishEvent(new BookCreatedEvent(BOOK_ID, bookId, bookName, pageCount, List.of()));
+        verify(outboxMessagePublisher).publish(new BookCreatedEvent(BOOK_ID, bookId, bookName, pageCount, List.of()));
     }
 
     @Test
@@ -139,9 +139,8 @@ class BookServiceTest {
                     softly.assertThat(savedBookEntity.pageCount()).isEqualTo(512);
                     softly.assertThat(savedBookEntity.version()).isEqualTo(2);
                 })));
-        verify(eventPublisher)
-                .publishEvent(
-                        new BookUpdatedEvent(BOOK_ID, bookId, savedBook.name(), savedBook.pageCount(), List.of()));
+        verify(outboxMessagePublisher)
+                .publish(new BookUpdatedEvent(BOOK_ID, bookId, savedBook.name(), savedBook.pageCount(), List.of()));
     }
 
     @Test
@@ -164,9 +163,8 @@ class BookServiceTest {
                     softly.assertThat(savedBookEntity.pageCount()).isEqualTo(180);
                     softly.assertThat(savedBookEntity.version()).isEqualTo(2);
                 })));
-        verify(eventPublisher)
-                .publishEvent(
-                        new BookUpdatedEvent(BOOK_ID, bookId, savedBook.name(), savedBook.pageCount(), List.of()));
+        verify(outboxMessagePublisher)
+                .publish(new BookUpdatedEvent(BOOK_ID, bookId, savedBook.name(), savedBook.pageCount(), List.of()));
     }
 
     @Test

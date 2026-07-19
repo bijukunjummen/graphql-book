@@ -14,3 +14,6 @@ books:
   demo:
     flaky-listener:
       enabled: false
+  outbox:
+    dispatcher:
+      fixed-delay-ms: 2000

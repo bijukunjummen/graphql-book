@@ -19,7 +19,9 @@ import org.bk.books.AuthorTestData;
 import org.bk.books.TimeTestData;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
+import org.bk.books.components.outbox.OutboxMessagePublisher;
 import org.bk.books.domain.entity.author.Author;
+import org.bk.books.domain.entity.author.AuthorEvents.AuthorRenamedEvent;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.port.AuthorStore;
 import org.bk.books.service.author.AuthorServiceCommands.CreateAuthorCommand;
@@ -35,7 +37,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -51,7 +52,7 @@ class AuthorServiceTest {
     private AuthorStore authorStore;
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private OutboxMessagePublisher outboxMessagePublisher;
 
     @Spy
     private Clock clock = TimeTestData.FIXED_CLOCK;
@@ -155,7 +156,7 @@ class AuthorServiceTest {
                     softly.assertThat(savedAuthorEntity.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
                     softly.assertThat(savedAuthorEntity.version()).isEqualTo(2);
                 })));
-        verify(eventPublisher).publishEvent(org.mockito.ArgumentMatchers.any(Object.class));
+        verify(outboxMessagePublisher).publish(org.mockito.ArgumentMatchers.any(AuthorRenamedEvent.class));
     }
 
     @Test

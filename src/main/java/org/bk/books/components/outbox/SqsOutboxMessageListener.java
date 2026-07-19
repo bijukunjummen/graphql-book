@@ -17,7 +17,7 @@ public class SqsOutboxMessageListener {
         try {
             Object event = objectMapper.readValue(message.event(), Class.forName(message.eventType()));
             eventDispatcher.dispatch(event);
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
