@@ -22,11 +22,6 @@ public class OutboxConfig {
     private static final String OUTBOX_QUEUE_NAME = "outboxqueue";
 
     @Bean
-    public SqsAsyncClient sqsAsyncClient() {
-        return SqsAsyncClient.builder().build();
-    }
-
-    @Bean
     public SqsTemplate outboxSqsTemplate(SqsAsyncClient sqsAsyncClient) {
         return SqsTemplate.builder()
                 .sqsAsyncClient(sqsAsyncClient)

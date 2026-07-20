@@ -1,5 +1,13 @@
 package org.bk.books.components.outbox;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.UUID;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.BookEvents.BookCreatedEvent;
@@ -9,15 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IdempotentConsumerAspectTest {
@@ -35,7 +34,8 @@ class IdempotentConsumerAspectTest {
         BookCreatedEvent event = event();
         ReliableEventListener eventListener = annotation("listenerOne");
         when(joinPoint.getArgs()).thenReturn(new Object[] {event});
-        when(consumerMessageLogStore.markProcessed("listenerOne", event.eventId())).thenReturn(true);
+        when(consumerMessageLogStore.markProcessed("listenerOne", event.eventId()))
+                .thenReturn(true);
         when(joinPoint.proceed()).thenReturn("processed");
 
         Object result = aspect.aroundEventListener(joinPoint, eventListener);
@@ -49,7 +49,8 @@ class IdempotentConsumerAspectTest {
         BookCreatedEvent event = event();
         ReliableEventListener eventListener = annotation("listenerTwo");
         when(joinPoint.getArgs()).thenReturn(new Object[] {event});
-        when(consumerMessageLogStore.markProcessed("listenerTwo", event.eventId())).thenReturn(false);
+        when(consumerMessageLogStore.alreadyProcessed(event.eventId(), "listenerTwo"))
+                .thenReturn(true);
 
         Object result = aspect.aroundEventListener(joinPoint, eventListener);
 

@@ -22,16 +22,15 @@ public class OutboxDispatcher {
     @Scheduled(fixedDelayString = "${books.outbox.dispatcher.fixed-delay-ms:2000}")
     @Transactional
     public void dispatchPending() {
-        Flux.fromIterable(outboxEventStore.fetchPending(batchSize))
-                .subscribe(event -> {
-                    try {
-                        LOGGER.info("Received event {}", event);
-                        brokerMessagePublisher.publish(new Envelope(event.payload(), event.eventType()));
-                        outboxEventStore.markPublished(event.eventId());
-                    } catch (Exception ex) {
-                        LOGGER.warn("Outbox publish failed for eventId={}", event.eventId(), ex);
-                        outboxEventStore.recordFailure(event.eventId(), ex.getMessage());
-                    }
-                });
+        Flux.fromIterable(outboxEventStore.fetchPending(batchSize)).subscribe(event -> {
+            try {
+                LOGGER.info("Received event {}", event);
+                brokerMessagePublisher.publish(new Envelope(event.payload(), event.eventType()));
+                outboxEventStore.markPublished(event.eventId());
+            } catch (Exception ex) {
+                LOGGER.warn("Outbox publish failed for eventId={}", event.eventId(), ex);
+                outboxEventStore.recordFailure(event.eventId(), ex.getMessage());
+            }
+        });
     }
 }

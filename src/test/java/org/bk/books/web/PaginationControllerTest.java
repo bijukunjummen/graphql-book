@@ -1,5 +1,6 @@
 package org.bk.books.web;
 
+import io.floci.testcontainers.FlociContainer;
 import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,13 +32,13 @@ class PaginationControllerTest {
         graphQlTester = HttpGraphQlTester.create(webTestClient);
         graphQlTester
                 .document("""
-            mutation {
-              loadSampleData {
-                authorsLoaded
-                booksLoaded
-              }
-            }
-            """)
+                        mutation {
+                          loadSampleData {
+                            authorsLoaded
+                            booksLoaded
+                          }
+                        }
+                        """)
                 .execute()
                 .path("loadSampleData.authorsLoaded")
                 .entity(Integer.class)
@@ -50,23 +51,23 @@ class PaginationControllerTest {
     @Test
     void test_findAuthors_whenPageSizeChangesAfterEndCursor_returnsNextAuthorPage() {
         String query = """
-            query authorPage($first: Int, $after: String) {
-              findAuthors(first: $first, after: $after, sort: [{ field: "name", order: ASC }]) {
-                edges {
-                  cursor
-                  node {
-                    name
+                query authorPage($first: Int, $after: String) {
+                  findAuthors(first: $first, after: $after, sort: [{ field: "name", order: ASC }]) {
+                    edges {
+                      cursor
+                      node {
+                        name
+                      }
+                    }
+                    pageInfo {
+                      hasNextPage
+                      hasPreviousPage
+                      endCursor
+                    }
+                    totalCount
                   }
                 }
-                pageInfo {
-                  hasNextPage
-                  hasPreviousPage
-                  endCursor
-                }
-                totalCount
-              }
-            }
-            """;
+                """;
 
         GraphQlTester.Response firstPage =
                 graphQlTester.document(query).variable("first", 2).execute();
@@ -110,23 +111,23 @@ class PaginationControllerTest {
     @Test
     void test_findBooks_whenPageSizeChangesAfterEndCursor_returnsNextBookPage() {
         String query = """
-            query bookPage($first: Int, $after: String) {
-              findBooks(first: $first, after: $after, sort: [{ field: "name", order: ASC }]) {
-                edges {
-                  cursor
-                  node {
-                    name
+                query bookPage($first: Int, $after: String) {
+                  findBooks(first: $first, after: $after, sort: [{ field: "name", order: ASC }]) {
+                    edges {
+                      cursor
+                      node {
+                        name
+                      }
+                    }
+                    pageInfo {
+                      hasNextPage
+                      hasPreviousPage
+                      endCursor
+                    }
+                    totalCount
                   }
                 }
-                pageInfo {
-                  hasNextPage
-                  hasPreviousPage
-                  endCursor
-                }
-                totalCount
-              }
-            }
-            """;
+                """;
 
         GraphQlTester.Response firstPage =
                 graphQlTester.document(query).variable("first", 3).execute();
@@ -167,4 +168,8 @@ class PaginationControllerTest {
     @ServiceConnection
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15.5-bullseye");
+
+    @Container
+    @ServiceConnection
+    private static final FlociContainer flociContainer = new FlociContainer();
 }

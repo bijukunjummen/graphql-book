@@ -9,6 +9,7 @@ public class SpringEventDispatcher implements EventDispatcher {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
+    @Override
     public <T> void dispatch(T event) {
         applicationEventPublisher.publishEvent(event);
     }

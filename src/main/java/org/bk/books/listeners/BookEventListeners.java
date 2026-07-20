@@ -1,12 +1,11 @@
 package org.bk.books.listeners;
 
+import java.util.concurrent.ThreadLocalRandom;
 import org.bk.books.components.outbox.ReliableEventListener;
 import org.bk.books.domain.entity.book.BookEvents.BookCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class BookEventListeners {

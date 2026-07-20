@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Aspect
 @Component
@@ -22,7 +21,8 @@ public class IdempotentConsumerAspect {
 
     @Around("@annotation(eventListener)")
     @Transactional
-    public Object aroundEventListener(ProceedingJoinPoint joinPoint, ReliableEventListener eventListener) throws Throwable {
+    public Object aroundEventListener(ProceedingJoinPoint joinPoint, ReliableEventListener eventListener)
+            throws Throwable {
         BaseEvent event = extractEvent(joinPoint.getArgs());
         String consumerId = resolveConsumerId(eventListener, joinPoint);
         boolean alreadyProcessed = consumerMessageLogStore.alreadyProcessed(event.eventId(), consumerId);
@@ -35,7 +35,7 @@ public class IdempotentConsumerAspect {
             Object returnValue = joinPoint.proceed();
             consumerMessageLogStore.markProcessed(consumerId, event.eventId());
             return returnValue;
-        }catch (Throwable throwable) {
+        } catch (Throwable throwable) {
             throw throwable;
         }
     }

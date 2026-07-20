@@ -117,7 +117,7 @@ public class BookAuthorManagementServiceImpl implements BookAuthorManagementServ
                 booksNoAuthors.stream().map(Book::id).toList());
         return booksNoAuthors.map(bookNoAuthor -> ImmutableBook.builder()
                 .from(bookNoAuthor)
-                .authors(authorIdsByBookIds.getOrDefault(bookNoAuthor, List.of()))
+                .authors(authorIdsByBookIds.getOrDefault(bookNoAuthor.id(), List.of()))
                 .build());
     }
 
@@ -128,13 +128,13 @@ public class BookAuthorManagementServiceImpl implements BookAuthorManagementServ
                 booksNoAuthors.stream().map(Book::id).toList());
         return booksNoAuthors.map(bookNoAuthor -> ImmutableBook.builder()
                 .from(bookNoAuthor)
-                .authors(authorIdsByBookIds.getOrDefault(bookNoAuthor, List.of()))
+                .authors(authorIdsByBookIds.getOrDefault(bookNoAuthor.id(), List.of()))
                 .build());
     }
 
     @Override
     public Optional<Book> getBook(ById<BookId> query) {
-        return bookService.getBook(query).map(book -> enrichWithAuthors(book));
+        return bookService.getBook(query).map(this::enrichWithAuthors);
     }
 
     @Override

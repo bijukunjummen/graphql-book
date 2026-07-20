@@ -2,6 +2,7 @@ package org.bk.books.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.floci.testcontainers.FlociContainer;
 import java.util.List;
 import org.bk.books.application.BookAuthorManagementService;
 import org.bk.books.common.query.ById;
@@ -76,4 +77,8 @@ class BookAuthorManagementServiceITest {
     @ServiceConnection
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15.5-bullseye");
+
+    @Container
+    @ServiceConnection
+    private static final FlociContainer flociContainer = new FlociContainer();
 }

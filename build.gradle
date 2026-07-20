@@ -53,6 +53,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-database-postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
     testImplementation "io.floci:testcontainers-floci:${testcontainersFlociVersion}"
+    testImplementation "io.floci:spring-boot-testcontainers-floci:${testcontainersFlociVersion}"
 
     annotationProcessor "org.immutables:value:$immutablesVersion"
     compileOnly "org.immutables:value-annotations:$immutablesVersion"

@@ -3,6 +3,7 @@ package org.bk.books.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.bk.books.AuthorTestData.AUTHOR_ID_1;
 import static org.bk.books.TimeTestData.DEFAULT_CREATED_DATE;
 import static org.bk.books.TimeTestData.DEFAULT_UPDATED_DATE;
 import static org.bk.books.TimeTestData.FIXED_CLOCK;
@@ -15,7 +16,6 @@ import static org.mockito.Mockito.when;
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
-import org.bk.books.AuthorTestData;
 import org.bk.books.TimeTestData;
 import org.bk.books.common.query.ById;
 import org.bk.books.common.query.ByIds;
@@ -58,7 +58,7 @@ class AuthorServiceTest {
     private Clock clock = TimeTestData.FIXED_CLOCK;
 
     @Spy
-    private Uuids uuids = Uuids.fixedUuid(AuthorTestData.AUTHOR_ID_1.id());
+    private Uuids uuids = Uuids.fixedUuid(AUTHOR_ID_1.id());
 
     @Test
     void test_createAuthor_withValidCommand_returnsCreatedAuthorAndSavesEntity() {
@@ -67,7 +67,7 @@ class AuthorServiceTest {
         Author createdAuthor = authorService.createAuthor(new CreateAuthorCommand("George Orwell"));
 
         assertSoftly(softly -> {
-            softly.assertThat(createdAuthor.id()).isEqualTo(AuthorTestData.AUTHOR_ID_1);
+            softly.assertThat(createdAuthor.id()).isEqualTo(AUTHOR_ID_1);
             softly.assertThat(createdAuthor.name()).isEqualTo("George Orwell");
             softly.assertThat(createdAuthor.createdAt()).isEqualTo(FIXED_CLOCK.instant());
             softly.assertThat(createdAuthor.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
@@ -75,7 +75,7 @@ class AuthorServiceTest {
         });
         verify(authorStore)
                 .save(assertArg(savedAuthor -> assertSoftly(softly -> {
-                    softly.assertThat(savedAuthor.id()).isEqualTo(AuthorTestData.AUTHOR_ID_1);
+                    softly.assertThat(savedAuthor.id()).isEqualTo(AUTHOR_ID_1);
                     softly.assertThat(savedAuthor.name()).isEqualTo("George Orwell");
                     softly.assertThat(savedAuthor.createdAt()).isEqualTo(FIXED_CLOCK.instant());
                     softly.assertThat(savedAuthor.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
@@ -95,7 +95,7 @@ class AuthorServiceTest {
         assertAuthor(author, authorId, "George Orwell", 0);
         verify(authorStore)
                 .save(assertArg(savedAuthorEntity -> assertSoftly(softly -> {
-                    softly.assertThat(savedAuthorEntity.id()).isEqualTo(authorId);
+                    softly.assertThat(savedAuthorEntity.id()).isEqualTo(AUTHOR_ID_1);
                     softly.assertThat(savedAuthorEntity.name()).isEqualTo("George Orwell");
                     softly.assertThat(savedAuthorEntity.createdAt()).isEqualTo(FIXED_CLOCK.instant());
                     softly.assertThat(savedAuthorEntity.updatedAt()).isEqualTo(FIXED_CLOCK.instant());
