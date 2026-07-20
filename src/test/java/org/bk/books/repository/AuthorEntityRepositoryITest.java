@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Clock;
 import org.bk.books.AuthorTestData;
 import org.bk.books.TimeTestData;
-import org.bk.books.entity.AuthorEntity;
+import org.bk.books.database.repository.entity.AuthorEntity;
 import org.bk.books.repository.author.AuthorEntityRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

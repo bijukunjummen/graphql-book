@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.bk.books.domain.entity.author.Author;
 import org.bk.books.domain.entity.author.AuthorId;
-import org.bk.books.entity.AuthorEntity;
+import org.bk.books.database.repository.entity.AuthorEntity;
 import org.bk.books.port.AuthorStore;
 import org.bk.books.repository.author.AuthorEntityRepository;
 import org.springframework.data.domain.Page;

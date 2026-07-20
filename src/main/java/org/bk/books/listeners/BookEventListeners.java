@@ -1,17 +1,18 @@
 package org.bk.books.listeners;
 
-import java.util.concurrent.ThreadLocalRandom;
+import org.bk.books.components.outbox.ReliableEventListener;
 import org.bk.books.domain.entity.book.BookEvents.BookCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class BookEventListeners {
     private static final Logger LOG = LoggerFactory.getLogger(BookEventListeners.class);
 
-    @EventListener
+    @ReliableEventListener(id = "bookCreatedListener1")
     public void bookCreatedListener1(BookCreatedEvent bookCreatedEvent) {
         LOG.atInfo()
                 .setMessage("Book created event from Listener 1: {}")
@@ -19,7 +20,7 @@ public class BookEventListeners {
                 .log();
     }
 
-    @EventListener
+    @ReliableEventListener(id = "bookCreatedListener2")
     public void bookCreatedListener2(BookCreatedEvent bookCreatedEvent) {
         int value = ThreadLocalRandom.current().nextInt(100);
         if (value < 50) {

@@ -1,7 +1,7 @@
 package org.bk.books.repository.book;
 
 import java.util.List;
-import org.bk.books.entity.BookEntity;
+import org.bk.books.database.repository.entity.BookEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;

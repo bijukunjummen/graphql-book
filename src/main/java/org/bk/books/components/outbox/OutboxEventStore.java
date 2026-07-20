@@ -5,7 +5,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.bk.books.entity.OutboxEventEntity;
+import org.bk.books.database.repository.entity.OutboxEventEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 

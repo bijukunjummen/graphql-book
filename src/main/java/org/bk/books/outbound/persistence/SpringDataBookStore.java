@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.bk.books.domain.entity.book.Book;
 import org.bk.books.domain.entity.book.BookId;
 import org.bk.books.domain.entity.book.ImmutableBook;
-import org.bk.books.entity.BookEntity;
+import org.bk.books.database.repository.entity.BookEntity;
 import org.bk.books.port.BookStore;
 import org.bk.books.repository.book.BookEntityEntityRepository;
 import org.springframework.data.domain.Page;

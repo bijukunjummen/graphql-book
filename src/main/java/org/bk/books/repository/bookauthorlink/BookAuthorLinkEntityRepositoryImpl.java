@@ -2,7 +2,7 @@ package org.bk.books.repository.bookauthorlink;
 
 import java.sql.Timestamp;
 import java.util.List;
-import org.bk.books.entity.BookAuthorLinkEntity;
+import org.bk.books.database.repository.entity.BookAuthorLinkEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class BookAuthorLinkEntityRepositoryImpl implements BookAuthorLinkEntityCustomRepository {

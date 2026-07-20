@@ -1,6 +1,6 @@
 package org.bk.books.repository.book;
 
-import org.bk.books.entity.BookEntity;
+import org.bk.books.database.repository.entity.BookEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

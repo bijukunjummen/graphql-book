@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.bk.books.domain.entity.author.AuthorId;
 import org.bk.books.domain.entity.book.BookId;
-import org.bk.books.entity.BookAuthorLinkEntity;
+import org.bk.books.database.repository.entity.BookAuthorLinkEntity;
 import org.bk.books.port.BookAuthorLinkStore;
 import org.bk.books.repository.bookauthorlink.BookAuthorLinkEntityRepository;
 import org.bk.books.util.Uuids;

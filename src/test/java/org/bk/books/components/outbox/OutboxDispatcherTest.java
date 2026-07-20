@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.bk.books.entity.OutboxEventEntity;
+import org.bk.books.database.repository.entity.OutboxEventEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,6 @@ class OutboxDispatcherTest {
     void test_dispatchPending_marksEventPublishedWhenBrokerSendSucceeds() {
         OutboxEventEntity event = new OutboxEventEntity(
                 UUID.fromString("53fb6b66-0f91-4d91-96c8-1f44f4032bd2"),
-                UUID.fromString("ec80d619-f349-4597-9854-326b6fbb6a14"),
                 "org.bk.books.domain.entity.book.BookEvents$BookCreatedEvent",
                 "{\"name\":\"Dune\"}",
                 Instant.parse("2026-07-18T08:00:00Z"),
@@ -45,14 +44,13 @@ class OutboxDispatcherTest {
         outboxDispatcher.dispatchPending();
 
         verify(brokerMessagePublisher).publish(new Envelope(event.payload(), event.eventType()));
-        verify(outboxEventStore).markPublished(event.id());
+        verify(outboxEventStore).markPublished(event.eventId());
     }
 
     @Test
     void test_dispatchPending_recordsFailureWhenBrokerSendFails() {
         OutboxEventEntity event = new OutboxEventEntity(
                 UUID.fromString("58f346af-8d45-40b4-ad48-3ec7f9f8f1dd"),
-                UUID.fromString("2df5dfd6-c7c6-4cbf-90f5-981d1a5c6f95"),
                 "org.bk.books.domain.entity.book.BookEvents$BookCreatedEvent",
                 "{\"name\":\"Hyperion\"}",
                 Instant.parse("2026-07-18T09:00:00Z"),
@@ -66,6 +64,6 @@ class OutboxDispatcherTest {
 
         outboxDispatcher.dispatchPending();
 
-        verify(outboxEventStore).recordFailure(event.id(), "SQS unavailable");
+        verify(outboxEventStore).recordFailure(event.eventId(), "SQS unavailable");
     }
 }

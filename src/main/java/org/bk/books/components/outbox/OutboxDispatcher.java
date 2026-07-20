@@ -1,6 +1,5 @@
 package org.bk.books.components.outbox;
 
-import org.bk.books.entity.OutboxEventEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

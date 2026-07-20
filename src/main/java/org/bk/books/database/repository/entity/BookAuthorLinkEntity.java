@@ -1,4 +1,4 @@
-package org.bk.books.entity;
+package org.bk.books.database.repository.entity;
 
 import java.time.Instant;
 import java.util.UUID;

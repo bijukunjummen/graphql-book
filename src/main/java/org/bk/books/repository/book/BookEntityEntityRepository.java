@@ -1,7 +1,7 @@
 package org.bk.books.repository.book;
 
 import java.util.UUID;
-import org.bk.books.entity.BookEntity;
+import org.bk.books.database.repository.entity.BookEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
